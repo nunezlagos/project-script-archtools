@@ -15,11 +15,6 @@ echo -e "\e[1;32m
    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝   ╚═╝                     
 \e[0m"
 
-# Function to check if a command exists
-command_exists() {
-    command -v "$1" &> /dev/null
-}
-
 # Function to display a progress bar
 show_progress() {
     local current=$1
@@ -119,7 +114,7 @@ EOL
 
 echo "Configuration complete. Please restart your terminal or run 'exec zsh' to apply the changes."
 
-# Credits
+# Credits.
 echo "Credits to: https://cheatsheetfactory.geekyhacker.com/linux/arch-lightdm"
 echo "YouTube video: https://www.youtube.com/watch?v=Vu5RRz11yD8 (Developer: https://github.com/DaarcyDev)"
 
