@@ -31,7 +31,7 @@ show_progress() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst alacritty zsh)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst alacritty zsh neofetch)
 
 total=${#packages[@]}
 current=0
@@ -50,6 +50,7 @@ sudo systemctl enable lightdm.service
 
 # Create configuration directories
 echo "Creating configuration directories..."
+mkdir -p ~/.config
 mkdir -p ~/.config/bspwm
 mkdir -p ~/.config/sxhkd
 mkdir -p ~/.config/polybar
