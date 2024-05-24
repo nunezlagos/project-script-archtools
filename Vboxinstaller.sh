@@ -44,22 +44,30 @@ echo -e "\nEnabling LightDM..."
 sudo systemctl enable lightdm.service
 
 # Create configuration directories
-echo "Creating configuration directories..."
-mkdir -p ~/.config
-mkdir -p ~/.config/bspwm
-mkdir -p ~/.config/sxhkd
-mkdir -p ~/.config/polybar
-mkdir -p ~/.config/picom
-mkdir -p ~/.config/dunst
-mkdir -p ~/.config/alacritty
 
-# Copy default configurations
+USER_NAME="$USER"
+
+
+CONFIG_DIR="/home/$USER_NAME/.config"
+
+
+ARCHTOOLS_DIR="/tmp/archtools"
+
+echo "Creating configuration directories..."
+mkdir -p "$CONFIG_DIR/bspwm"
+mkdir -p "$CONFIG_DIR/sxhkd"
+mkdir -p "$CONFIG_DIR/polybar"
+mkdir -p "$CONFIG_DIR/picom"
+mkdir -p "$CONFIG_DIR/dunst"
+mkdir -p "$CONFIG_DIR/alacritty"
+
+# Copy default configurations & custom
 echo "Copying default configurations..."
-cp /archtools/bspwmrc ~/.config/bspwm/
-cp /archtools/sxhkdrc ~/.config/sxhkd/
-cp /etc/xdg/picom.conf ~/.config/picom/
-cp /etc/polybar/config.ini ~/.config/polybar/
-cp /etc/dunst/dunstrc ~/.config/dunst/
+cp "$ARCHTOOLS_DIR/bspwmrc" "$CONFIG_DIR/bspwm/"
+cp "$ARCHTOOLS_DIR/sxhkdrc" "$CONFIG_DIR/sxhkd/"
+cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
+cp /etc/polybar/config.ini "$CONFIG_DIR/polybar/"
+cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
 # Make the bspwmrc file executable
 echo "Making the bspwmrc file executable..."
