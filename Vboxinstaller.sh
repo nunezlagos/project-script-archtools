@@ -48,8 +48,13 @@ sudo systemctl enable lightdm.service
 USER_NAME="$USER"
 
 
+
+
 CONFIG_DIR="/home/$USER_NAME/.config"
 
+
+mkdir -p "$CONFIG_DIR"
+chmod +777  "$CONFIG_DIR"
 
 ARCHTOOLS_DIR="/tmp/archtools"
 
@@ -59,7 +64,7 @@ mkdir -p "$CONFIG_DIR/sxhkd"
 mkdir -p "$CONFIG_DIR/polybar"
 mkdir -p "$CONFIG_DIR/picom"
 mkdir -p "$CONFIG_DIR/dunst"
-mkdir -p "$CONFIG_DIR/alacritty"
+
 
 # Copy default configurations & custom
 echo "Copying default configurations..."
