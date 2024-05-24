@@ -74,6 +74,36 @@ cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
 cp /etc/polybar/config.ini "$CONFIG_DIR/polybar/"
 cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
+chsh -s $(which zsh)
+
+autoload -Uz zsh-newuser-install
+zsh-newuser-install -f
+
+echo $SHELL
+
+chsh -l
+
+chsh -s /bin/zsh
+
+echo $SHELL
+
+# install yay for linux
+sudo pacman -S --needed git base-devel
+git clone https://aur.archlinux.org/yay.git
+cd yay
+makepkg -si
+
+#intall powerlevel10k
+yay -Sy --noconfirm ttf-meslo-nerd-font-powerlevel10k
+
+sudo make install
+
+yay -S --noconfirm zsh-theme-powerlevel10k-git
+echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
+
+
+
+
 # Make the bspwmrc file executable
 echo "Making the bspwmrc file executable..."
 chmod +x ~/.config/bspwm/bspwmrc
