@@ -13,7 +13,9 @@ bspc config split_ratio          0.52
 bspc config borderless_monocle   true
 bspc config gapless_monocle      true
 
-launch.sh &
+polybar &
+sleep 0.5
+
 kitty &
 dunst &
 firefox &
