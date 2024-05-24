@@ -18,4 +18,4 @@ sleep 0.5
 
 kitty &
 dunst &
-firefox &
+
