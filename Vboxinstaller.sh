@@ -28,7 +28,7 @@ show_progress() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox)
 
 total=${#packages[@]}
 current=0
