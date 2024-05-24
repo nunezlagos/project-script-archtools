@@ -13,6 +13,6 @@ bspc config gapless_monocle      true
 
 sxhkd &
 polybar &
-kitty &
+alacritty &
 dunst &
 firefox &
