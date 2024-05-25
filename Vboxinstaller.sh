@@ -52,15 +52,16 @@ ARCHTOOLS_DIR="/tmp/archtools"
 
 # Create and set permissions for configuration directories
 echo "Creating and setting permissions for configuration directories..."
-mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst"
-chmod 777 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst"
+mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/script"
+chmod 777 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst"  "$CONFIG_DIR/polybar/script"
 
 # Copy default configurations
 echo "Copying default configurations..."
 cp "$ARCHTOOLS_DIR/bspwmrc" "$CONFIG_DIR/bspwm/"
 cp "$ARCHTOOLS_DIR/sxhkdrc" "$CONFIG_DIR/sxhkd/"
+cp "$ARCHTOOLS_DIR/launch.sh" "$CONFIG_DIR/polybar/script/"
 cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
-cp /etc/polybar/config.ini "$CONFIG_DIR/polybar/"
+cp "$ARCHTOOLS_DIR/config.ini" "$CONFIG_DIR/polybar/"
 cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
 # Change shell to zsh for the current user
