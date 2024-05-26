@@ -90,7 +90,7 @@ cp -r "$ARCHTOOLS_DIR/bspwm*" "$CONFIG_DIR/bspwm/"
 cp -r "$ARCHTOOLS_DIR/sxhkd*" "$CONFIG_DIR/sxhkd/"
 cp -r "$ARCHTOOLS_DIR/polybar*" "$CONFIG_DIR/polybar/"
 cp -r "$ARCHTOOLS_DIR/kitty*" "$CONFIG_DIR/kitty/"
-
+cp -r "$ARCHTOOLS_DIR/polybar/fonts*" "/usr/share/fonts/"
 cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
 cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
