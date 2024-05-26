@@ -26,7 +26,7 @@ show_progress() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox code nvim)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox code nvim feh)
 
 total=${#packages[@]}
 current=0
@@ -107,7 +107,7 @@ echo "Changing shell to zsh..."
 chsh -s $(which zsh) $USER_NAME
 
 # Ensure all config files are writable
-sudo chmod 775 "$CONFIG_DIR/bspwm/*" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
+#sudo chmod 775 "$CONFIG_DIR/bspwm/*" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
 
 # Set powerlevel10k theme in .zshrc
 echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
