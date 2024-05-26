@@ -15,6 +15,8 @@ echo -e "\e[1;32m
    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝   ╚═╝                     
 \e[0m"
 
+
+
 # Function to display a progress bar
 show_progress() {
     local current=$1
@@ -26,7 +28,7 @@ show_progress() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox vscode)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox code)
 
 total=${#packages[@]}
 current=0
@@ -35,6 +37,10 @@ current=0
 for package in "${packages[@]}"; do
     echo "Installing $package..."
     sudo pacman -S --noconfirm $package
+    if [ $? -ne 0 ]; then
+        echo "Failed to install $package"
+        exit 1
+    fi
     current=$((current + 1))
     show_progress $current $total
 done
@@ -42,6 +48,7 @@ done
 # Enable LightDM
 echo -e "\nEnabling LightDM..."
 sudo systemctl enable lightdm.service
+sudo systemctl start lightdm.service
 
 # User and config directories
 USER_NAME="$USER"
@@ -51,32 +58,30 @@ ARCHTOOLS_DIR="/tmp/archtools"
 # Create and set permissions for configuration directories
 echo "Creating and setting permissions for configuration directories..."
 
-mkdir -p "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/script" "$CONFIG_DIR/kitty"
-chmod 777 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst"  "$CONFIG_DIR/polybar/script" "$CONFIG_DIR/kitty"
+mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty"
+sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty"
 
-# Change shell to zsh for the current user
-echo "Changing shell to zsh..."
-chsh -s $(which zsh)
 # Copy default configurations
 echo "Copying default configurations..."
-cp -rv "$ARCHTOOLS_DIR/bspwm/*" "$CONFIG_DIR/bspwm/"
-cp -rv "$ARCHTOOLS_DIR/sxhkd/*" "$CONFIG_DIR/sxhkd/"
-cp -rv "$ARCHTOOLS_DIR/polybar/*" "$CONFIG_DIR/polybar/"
-cp -rv "$ARCHTOOLS_DIR/kitty/*" "$CONFIG_DIR/kitty/"
-cp -rv "$ARCHTOOLS_DIR/polybar/fonts/*" "/usr/share/fonts/"
-cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
-cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
+sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
+sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
+sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
+sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
+sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
 # Make bspwmrc file executable
 echo "Making bspwmrc file executable..."
 chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
+
 # Install yay for AUR packages without interaction
 echo "Installing yay..."
 sudo pacman -S --needed --noconfirm git base-devel
-git clone https://aur.archlinux.org/yay.git
-cd yay
+git clone https://aur.archlinux.org/yay.git /tmp/yay
+cd /tmp/yay
 makepkg -si --noconfirm
-cd ..
+cd -
 
 # Ensure yay does not prompt for any confirmation
 yay --save --answerclean None --answerdiff None --answeredit None
@@ -93,13 +98,15 @@ yay -S --noconfirm brave-bin
 echo "Installing oh-my-zsh..."
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
+# Change shell to zsh for the current user
+echo "Changing shell to zsh..."
+chsh -s $(which zsh) $USER_NAME
 
 # Ensure all config files are writable
-chmod 777 "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
+sudo chmod 755 "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
+
 # Set powerlevel10k theme in .zshrc
 echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
-
-
 
 echo "Configuration complete. Please restart your terminal or run 'exec zsh' to apply the changes."
 
