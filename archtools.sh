@@ -26,7 +26,7 @@ show_progress() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox code)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox code nvim)
 
 total=${#packages[@]}
 current=0
@@ -57,8 +57,8 @@ ARCHTOOLS_DIR="/tmp/archtools"
 # Create and set permissions for configuration directories
 echo "Creating and setting permissions for configuration directories..."
 
-mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper"
-sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper"
+mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper" "$CONFIG_DIR/p10k"
+sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper" "$CONFIG_DIR/p10k"
 
 # Copy default configurations with correct permissions
 echo "Copying default configurations..."
@@ -70,10 +70,14 @@ sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
 sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
 sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf"
 sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc"
+sudo cp -rv "$ARCHTOOLS_DIR/p10k/." "$CONFIG_DIR"
 
-# Make bspwmrc file executable
+
+# Make file executable 
 echo "Making bspwmrc file executable..."
-chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
+sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
+sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
+sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
 
 # Install yay for AUR packages without interaction
 echo "Installing yay..."
