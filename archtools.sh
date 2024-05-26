@@ -45,7 +45,7 @@ sudo systemctl enable lightdm.service
 
 # User and config directories
 USER_NAME="$USER"
-CONFIG_DIR="/home/$USER_NAME/.config/archtools"
+CONFIG_DIR="/home/$USER_NAME/.config"
 ARCHTOOLS_DIR="/tmp/archtools"
 
 # Create and set permissions for configuration directories
@@ -59,13 +59,13 @@ echo "Changing shell to zsh..."
 chsh -s $(which zsh)
 # Copy default configurations
 echo "Copying default configurations..."
-cp -r "$ARCHTOOLS_DIR/bspwm*" "$CONFIG_DIR/bspwm/"
-cp -r "$ARCHTOOLS_DIR/sxhkd*" "$CONFIG_DIR/sxhkd/"
-cp -r "$ARCHTOOLS_DIR/polybar*" "$CONFIG_DIR/polybar/"
-cp -r "$ARCHTOOLS_DIR/kitty*" "$CONFIG_DIR/kitty/"
-cp -r "$ARCHTOOLS_DIR/polybar/fonts*" "/usr/share/fonts/"
-cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
-cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
+cp -rv "$ARCHTOOLS_DIR/bspwm/*" "$CONFIG_DIR/bspwm/"
+cp -rv "$ARCHTOOLS_DIR/sxhkd/*" "$CONFIG_DIR/sxhkd/"
+cp -rv "$ARCHTOOLS_DIR/polybar/*" "$CONFIG_DIR/polybar/"
+cp -rv "$ARCHTOOLS_DIR/kitty/*" "$CONFIG_DIR/kitty/"
+cp -rv "$ARCHTOOLS_DIR/polybar/fonts/*" "/usr/share/fonts/"
+cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
+cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
 # Make bspwmrc file executable
 echo "Making bspwmrc file executable..."
