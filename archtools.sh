@@ -6,7 +6,7 @@ echo -e "\e[1;32m
    ██║  ██║█████╗  ██║   ██║█████╗  ██║     ██║   ██║██████╔╝█████╗  ██████╔╝
    ██║  ██║██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║     ██║   ██║██╔═══╝ ██╔══╝  ██╔══██╗
    ██████╔╝███████╗ ╚████╔╝ ███████╗███████╗╚██████╔╝██║     ███████╗██║  ██║
-   ╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚══════╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝
+   ╚═════╝ ╚══════╝  ╚═══╝  ╚══════╝╚══════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝                     
     █████╗ ██████╗  ██████╗██╗  ██╗    ██╗  ██╗██╗████████╗                  
    ██╔══██╗██╔══██╗██╔════╝██║  ██║    ██║ ██╔╝██║╚══██╔══╝                  
    ███████║██████╔╝██║     ███████║    █████╔╝ ██║   ██║                     
@@ -14,7 +14,6 @@ echo -e "\e[1;32m
    ██║  ██║██║  ██║╚██████╗██║  ██║    ██║  ██╗██║   ██║                     
    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝   ╚═╝                     
 \e[0m"
-
 
 # Function to display a progress bar
 show_progress() {
@@ -63,14 +62,14 @@ sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DI
 
 # Copy default configurations with correct permissions
 echo "Copying default configurations..."
-sudo install -Dm755 "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
-sudo install -Dm755 "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
-sudo install -Dm755 "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
-sudo install -Dm755 "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
-sudo install -Dm755 "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
-sudo install -Dm755 "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
-sudo install -Dm755 /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
-sudo install -Dm755 /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
+sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
+sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
+sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
+sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
+sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf"
+sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc"
 
 # Make bspwmrc file executable
 echo "Making bspwmrc file executable..."
