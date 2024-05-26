@@ -16,7 +16,6 @@ echo -e "\e[1;32m
 \e[0m"
 
 
-
 # Function to display a progress bar
 show_progress() {
     local current=$1
@@ -43,6 +42,7 @@ for package in "${packages[@]}"; do
     fi
     current=$((current + 1))
     show_progress $current $total
+    sleep 1
 done
 
 # Enable LightDM
@@ -61,20 +61,20 @@ echo "Creating and setting permissions for configuration directories..."
 mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper"
 sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper"
 
-# Copy default configurations
+# Copy default configurations with correct permissions
 echo "Copying default configurations..."
-sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
-sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
-sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
-sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
-sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
-sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
-sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
-sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
+sudo install -Dm755 "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
+sudo install -Dm755 "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
+sudo install -Dm755 "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
+sudo install -Dm755 "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
+sudo install -Dm755 "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
+sudo install -Dm755 "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
+sudo install -Dm755 /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
+sudo install -Dm755 /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
 # Make bspwmrc file executable
 echo "Making bspwmrc file executable..."
-chmod +x "$CONFIG_DIR/bspwm/*"
+chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 
 # Install yay for AUR packages without interaction
 echo "Installing yay..."
@@ -114,6 +114,3 @@ echo "Configuration complete. Please restart your terminal or run 'exec zsh' to 
 # Credits
 echo "Credits to: https://cheatsheetfactory.geekyhacker.com/linux/arch-lightdm"
 echo "YouTube video: https://www.youtube.com/watch?v=Vu5RRz11yD8 (Developer: https://github.com/DaarcyDev)"
-
-
-
