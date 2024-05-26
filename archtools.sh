@@ -58,8 +58,8 @@ ARCHTOOLS_DIR="/tmp/archtools"
 # Create and set permissions for configuration directories
 echo "Creating and setting permissions for configuration directories..."
 
-mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty"
-sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty"
+mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper"
+sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper"
 
 # Copy default configurations
 echo "Copying default configurations..."
@@ -74,7 +74,7 @@ sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
 # Make bspwmrc file executable
 echo "Making bspwmrc file executable..."
-chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
+chmod +x "$CONFIG_DIR/bspwm/*"
 
 # Install yay for AUR packages without interaction
 echo "Installing yay..."
@@ -104,7 +104,7 @@ echo "Changing shell to zsh..."
 chsh -s $(which zsh) $USER_NAME
 
 # Ensure all config files are writable
-sudo chmod 755 "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
+sudo chmod 775 "$CONFIG_DIR/bspwm/*" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
 
 # Set powerlevel10k theme in .zshrc
 echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
