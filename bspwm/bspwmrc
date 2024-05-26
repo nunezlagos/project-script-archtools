@@ -22,7 +22,7 @@ bspc rule -a Screenkey manage=off
 # RESOLUTION
 
 # WALLPAPER
-feh --bg-fill ~/.config/archtools/wallpaper/onigirl.png
+feh --bg-fill ~/.config/wallpaper/onigirl.png
 # POLYBAR
 ~/.config/polybar/launch.sh
 
