@@ -57,7 +57,19 @@ chmod 777 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/pol
 # Change shell to zsh for the current user
 echo "Changing shell to zsh..."
 chsh -s $(which zsh)
+# Copy default configurations
+echo "Copying default configurations..."
+cp -r "$ARCHTOOLS_DIR/bspwm*" "$CONFIG_DIR/bspwm/"
+cp -r "$ARCHTOOLS_DIR/sxhkd*" "$CONFIG_DIR/sxhkd/"
+cp -r "$ARCHTOOLS_DIR/polybar*" "$CONFIG_DIR/polybar/"
+cp -r "$ARCHTOOLS_DIR/kitty*" "$CONFIG_DIR/kitty/"
+cp -r "$ARCHTOOLS_DIR/polybar/fonts*" "/usr/share/fonts/"
+cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
+cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
+# Make bspwmrc file executable
+echo "Making bspwmrc file executable..."
+chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 # Install yay for AUR packages without interaction
 echo "Installing yay..."
 sudo pacman -S --needed --noconfirm git base-devel
@@ -80,19 +92,7 @@ yay -S --noconfirm brave-bin
 # Install oh-my-zsh
 echo "Installing oh-my-zsh..."
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-# Copy default configurations
-echo "Copying default configurations..."
-cp -r "$ARCHTOOLS_DIR/bspwm*" "$CONFIG_DIR/bspwm/"
-cp -r "$ARCHTOOLS_DIR/sxhkd*" "$CONFIG_DIR/sxhkd/"
-cp -r "$ARCHTOOLS_DIR/polybar*" "$CONFIG_DIR/polybar/"
-cp -r "$ARCHTOOLS_DIR/kitty*" "$CONFIG_DIR/kitty/"
-cp -r "$ARCHTOOLS_DIR/polybar/fonts*" "/usr/share/fonts/"
-cp /etc/xdg/picom.conf "$CONFIG_DIR/picom/"
-cp /etc/dunst/dunstrc "$CONFIG_DIR/dunst/"
 
-# Make bspwmrc file executable
-echo "Making bspwmrc file executable..."
-chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 
 # Ensure all config files are writable
 chmod 777 "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
