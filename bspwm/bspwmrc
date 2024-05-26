@@ -24,7 +24,7 @@ bspc rule -a Screenkey manage=off
 # WALLPAPER
 feh --bg-fill ~/.config/archtools/wallpaper/wallhaven-rro57q.png
 # POLYBAR
-~/.config/archtools/polybar/launch.sh
+~/.config/polybar/launch.sh
 
 # CUSTOM
 bspc config focus_follows_pointer true
