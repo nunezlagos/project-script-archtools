@@ -80,10 +80,6 @@ yay -S --noconfirm brave-bin
 # Install oh-my-zsh
 echo "Installing oh-my-zsh..."
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-# Set powerlevel10k theme in .zshrc
-echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
-
 # Copy default configurations
 echo "Copying default configurations..."
 cp -r "$ARCHTOOLS_DIR/bspwm*" "$CONFIG_DIR/bspwm/"
@@ -100,6 +96,10 @@ chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 
 # Ensure all config files are writable
 chmod 777 "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
+# Set powerlevel10k theme in .zshrc
+echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
+
+
 
 echo "Configuration complete. Please restart your terminal or run 'exec zsh' to apply the changes."
 
