@@ -81,8 +81,8 @@ plugins=(
   git
   zsh-interactive-cd
   fzf
-  zsh-autosuggestions
-  zsh-syntax-highlighting
+  # zsh-autosuggestions
+  # zsh-syntax-highlighting
   z
 
 )
