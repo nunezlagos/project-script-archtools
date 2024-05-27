@@ -70,14 +70,14 @@ sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
 sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
 sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf"
 sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc"
-sudo cp -rv "$ARCHTOOLS_DIR/p10k/." "$CONFIG_DIR"
-
 
 # Make file executable 
 echo "Making bspwmrc file executable..."
 sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
 sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
+
+
 
 # Install yay for AUR packages without interaction
 echo "Installing yay..."
@@ -101,6 +101,11 @@ yay -S --noconfirm brave-bin
 # Install oh-my-zsh
 echo "Installing oh-my-zsh..."
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+
+sudo cp -rv "$ARCHTOOLS_DIR/p10k/.p10k.zsh" "$CONFIG_DIR"
+sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/homme/jumper/"
+sudo chmod +x "/home/jumper/.zshrc"
 
 # Change shell to zsh for the current user
 echo "Changing shell to zsh..."
