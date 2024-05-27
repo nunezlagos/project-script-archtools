@@ -61,21 +61,6 @@ mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_
 sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper" "$CONFIG_DIR/p10k"
 
 # Copy default configurations with correct permissions
-echo "Copying default configurations..."
-sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
-sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
-sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
-sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
-sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
-sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
-sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf"
-sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc"
-
-# Make file executable 
-echo "Making bspwmrc file executable..."
-sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
-sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
-sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
 
 
 
@@ -103,13 +88,26 @@ echo "Installing oh-my-zsh..."
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 
+
+echo "Copying default configurations..."
+sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
+sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
+sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
+sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
+sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf"
+sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc"
 sudo cp -rv "$ARCHTOOLS_DIR/p10k/.p10k.zsh" "$CONFIG_DIR"
-sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/homme/jumper/"
-sudo chmod +x "/home/jumper/.zshrc"
+
+echo "Making bspwmrc file executable..."
+sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
+sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
+sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
+
 
 # Change shell to zsh for the current user
-echo "Changing shell to zsh..."
-chsh -s $(which zsh) $USER_NAME
+
 
 # Ensure all config files are writable
 #sudo chmod 775 "$CONFIG_DIR/bspwm/*" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
@@ -117,7 +115,14 @@ chsh -s $(which zsh) $USER_NAME
 # Set powerlevel10k theme in .zshrc
 echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
 
+sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/homme/$USER_NAME/"
+sudo chmod +x "/home/$USER_NAME/.zshrc"
+echo "Changing shell to zsh..."
+chsh -s $(which zsh) $USER_NAME
+
+
 echo "Configuration complete. Please restart your terminal or run 'exec zsh' to apply the changes."
+
 
 # Credits
 echo "Credits to: https://cheatsheetfactory.geekyhacker.com/linux/arch-lightdm"
