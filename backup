@@ -57,24 +57,25 @@ sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
 sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
 
-# # Install yay for AUR packages without interaction
-# sudo pacman -S --needed --noconfirm git base-devel &> /dev/null
-# git clone https://aur.archlinux.org/yay.git /tmp/yay &> /dev/null
-# cd /tmp/yay
-# makepkg -si --noconfirm &> /dev/null
-# cd -
+# Install yay for AUR packages without interaction
+sudo pacman -S --needed --noconfirm git base-devel &> /dev/null
+git clone https://aur.archlinux.org/yay.git /tmp/yay &> /dev/null
+cd /tmp/yay
+makepkg -si --noconfirm &> /dev/null
+cd -
 
-# # Ensure yay does not prompt for any confirmation
-# yay --save --answerclean None --answerdiff None --answeredit None &> /dev/null
+# Ensure yay does not prompt for any confirmation
+yay --save --answerclean None --answerdiff None --answeredit None &> /dev/null
 
 # # Install powerlevel10k theme
-# yay -Sy --noconfirm ttf-meslo-nerd-font-powerlevel10k zsh-theme-powerlevel10k-git &> /dev/null
+yay -Sy --noconfirm ttf-meslo-nerd-font-powerlevel10k zsh-theme-powerlevel10k-git &> /dev/null
 
-# # Install Brave browser
-# yay -S --noconfirm brave-bin &> /dev/null
+# Install Brave browser
+yay -S --noconfirm brave-bin &> /dev/null
 
-# # Install oh-my-zsh
-# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" &> /dev/null
+# Install oh-my-zsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" &> /dev/null
+# chsh -s $(which zsh) $USER_NAME &> /dev/null
 
 # Change shell to zsh for the current user
 sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/home/$USER_NAME/" &> /dev/null
