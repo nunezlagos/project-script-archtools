@@ -83,11 +83,6 @@ yay -Sy --noconfirm ttf-meslo-nerd-font-powerlevel10k zsh-theme-powerlevel10k-gi
 echo "Installing Brave browser..."
 yay -S --noconfirm brave-bin
 
-# Install oh-my-zsh
-echo "Installing oh-my-zsh..."
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-
-
 
 echo "Copying default configurations..."
 sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
@@ -105,6 +100,9 @@ sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
 sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
 
+# Install oh-my-zsh
+echo "Installing oh-my-zsh..."
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # Change shell to zsh for the current user
 
@@ -113,7 +111,7 @@ sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
 #sudo chmod 775 "$CONFIG_DIR/bspwm/*" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
 
 # Set powerlevel10k theme in .zshrc
-echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
+# echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
 
 sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/homme/$USER_NAME/"
 sudo chmod +x "/home/$USER_NAME/.zshrc"
