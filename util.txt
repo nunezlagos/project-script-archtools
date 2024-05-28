@@ -2,3 +2,6 @@ https://forum.garudalinux.org/t/sharing-my-kitty-config-best-terminal-emulator-i
 zfz
 
 https://wallhaven.cc/w/q21ezq
+
+
+https://github.com/adi1090x/rofi
