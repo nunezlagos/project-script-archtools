@@ -37,7 +37,7 @@ show_header() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh neofetch firefox code feh fzf bashtop)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh neofetch firefox code feh fzf bashtop picom)
 
 total=${#packages[@]}
 current=0
