@@ -15,28 +15,41 @@ echo -e "\e[1;32m
    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝   ╚═╝                     
 \e[0m"
 
+
 # Function to display a progress bar
 show_progress() {
     local current=$1
     local total=$2
+    local bar_length=50
     local percent=$(( current * 100 / total ))
-    local progress=$(( current * 50 / total ))
-    local bar=$(printf "%-${progress}s" "=")
-    printf "\r[%s] %d%%" "${bar// /=}" "$percent"
+    local filled=$(( current * bar_length / total ))
+    local empty=$(( bar_length - filled ))
+    local bar=$(printf "%-${filled}s" "=")
+    local spaces=$(printf "%-${empty}s" " ")
+
+    printf "\r[%-50s] %d%%" "${bar// /=}${spaces}" "$percent"
+}
+
+# Function to display a header
+show_header() {
+    local message=$1
+    echo -e "\n\033[1;34m[Archtools@by Jumper]\033[0m $message\n"
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar picom dunst kitty zsh neofetch firefox code  feh fzf)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh neofetch firefox code feh fzf bashtop)
 
 total=${#packages[@]}
 current=0
 
+# Show header
+show_header "Installing Packages"
+
 # Install packages with progress display
 for package in "${packages[@]}"; do
-    echo "Installing $package..."
-    sudo pacman -S --noconfirm $package
+    sudo pacman -S --noconfirm $package &> /dev/null
     if [ $? -ne 0 ]; then
-        echo "Failed to install $package"
+        echo -e "\nFailed to install $package"
         exit 1
     fi
     current=$((current + 1))
@@ -45,9 +58,11 @@ for package in "${packages[@]}"; do
 done
 
 # Enable LightDM
-echo -e "\nEnabling LightDM..."
-sudo systemctl enable lightdm.service
-sudo systemctl start lightdm.service
+show_header "Enabling LightDM"
+sudo systemctl enable lightdm.service &> /dev/null
+sudo systemctl start lightdm.service &> /dev/null
+show_progress 1 1
+sleep 1
 
 # User and config directories
 USER_NAME="$USER"
@@ -55,73 +70,50 @@ CONFIG_DIR="/home/$USER_NAME/.config"
 ARCHTOOLS_DIR="/tmp/archtools"
 
 # Create and set permissions for configuration directories
-echo "Creating and setting permissions for configuration directories..."
-
-mkdir -p "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper" "$CONFIG_DIR/p10k"
-sudo chmod 755 "$CONFIG_DIR" "$CONFIG_DIR/bspwm" "$CONFIG_DIR/sxhkd" "$CONFIG_DIR/polybar" "$CONFIG_DIR/picom" "$CONFIG_DIR/dunst" "$CONFIG_DIR/polybar/scripts" "$CONFIG_DIR/kitty" "$CONFIG_DIR/wallpaper" "$CONFIG_DIR/p10k"
+show_header "Creating Configuration Directories"
+directories=(bspwm sxhkd polybar polybar/scripts picom dunst kitty wallpaper p10k)
+for dir in "${directories[@]}"; do
+    mkdir -p "$CONFIG_DIR/$dir"
+    sudo chmod 755 "$CONFIG_DIR/$dir"
+done
+show_progress 1 1
+sleep 1
 
 # Copy default configurations with correct permissions
+show_header "Copying Default Configurations"
+sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/" &> /dev/null
+sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/" &> /dev/null
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/" &> /dev/null
+sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/" &> /dev/null
+sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/" &> /dev/null
+sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/" &> /dev/null
+sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf" &> /dev/null
+sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc" &> /dev/null
+sudo cp -rv "$ARCHTOOLS_DIR/p10k/.p10k.zsh" "$CONFIG_DIR" &> /dev/null
+show_progress 1 1
+sleep 1
 
-
-
-# Install yay for AUR packages without interaction
-echo "Installing yay..."
-sudo pacman -S --needed --noconfirm git base-devel
-git clone https://aur.archlinux.org/yay.git /tmp/yay
-cd /tmp/yay
-makepkg -si --noconfirm
-cd -
-
-# Ensure yay does not prompt for any confirmation
-yay --save --answerclean None --answerdiff None --answeredit None
-
-# Install powerlevel10k theme
-echo "Installing powerlevel10k theme..."
-yay -Sy --noconfirm ttf-meslo-nerd-font-powerlevel10k zsh-theme-powerlevel10k-git
-
-# Install Brave browser
-echo "Installing Brave browser..."
-yay -S --noconfirm brave-bin
-
-
-echo "Copying default configurations..."
-sudo cp -rv "$ARCHTOOLS_DIR/bspwm/." "$CONFIG_DIR/bspwm/"
-sudo cp -rv "$ARCHTOOLS_DIR/sxhkd/." "$CONFIG_DIR/sxhkd/"
-sudo cp -rv "$ARCHTOOLS_DIR/polybar/." "$CONFIG_DIR/polybar/"
-sudo cp -rv "$ARCHTOOLS_DIR/kitty/." "$CONFIG_DIR/kitty/"
-sudo cp -rv "$ARCHTOOLS_DIR/wallpaper/." "$CONFIG_DIR/wallpaper/"
-sudo cp -rv "$ARCHTOOLS_DIR/polybar/fonts/." "/usr/share/fonts/"
-sudo cp -v /etc/xdg/picom.conf "$CONFIG_DIR/picom/picom.conf"
-sudo cp -v /etc/dunst/dunstrc "$CONFIG_DIR/dunst/dunstrc"
-sudo cp -rv "$ARCHTOOLS_DIR/p10k/.p10k.zsh" "$CONFIG_DIR"
-
-echo "Making bspwmrc file executable..."
+# Make bspwmrc file executable
+show_header "Setting Executable Permissions"
 sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
 sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
-
-# Install oh-my-zsh
-echo "Installing oh-my-zsh..."
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+show_progress 1 1
+sleep 1
 
 # Change shell to zsh for the current user
-
-
-# Ensure all config files are writable
-#sudo chmod 775 "$CONFIG_DIR/bspwm/*" "$CONFIG_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/picom/picom.conf" "$CONFIG_DIR/polybar/config.ini" "$CONFIG_DIR/dunst/dunstrc"
-
-# Set powerlevel10k theme in .zshrc
-# echo 'source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme' >> ~/.zshrc
-
-sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/homme/$USER_NAME/"
+show_header "Setting Up Zsh"
+sudo cp -v "$ARCHTOOLS_DIR/.zshrc" "/home/$USER_NAME/" &> /dev/null
 sudo chmod +x "/home/$USER_NAME/.zshrc"
-echo "Changing shell to zsh..."
-chsh -s $(which zsh) $USER_NAME
+# chsh -s $(which zsh) $USER_NAME &> /dev/null
+show_progress 1 1
+sleep 1
 
-
-echo "Configuration complete. Please restart your terminal or run 'exec zsh' to apply the changes."
-
+# Final message
+show_header "Configuration Complete"
+echo -e "\nConfiguration complete. Please restart your terminal or run 'exec zsh' to apply the changes.\n"
 
 # Credits
-echo "Credits to: https://cheatsheetfactory.geekyhacker.com/linux/arch-lightdm"
-echo "YouTube video: https://www.youtube.com/watch?v=Vu5RRz11yD8 (Developer: https://github.com/DaarcyDev)"
+show_header "Credits"
+echo -e "\nCredits to: https://cheatsheetfactory.geekyhacker.com/linux/arch-lightdm"
+echo -e "YouTube video: https://www.youtube.com/watch?v=Vu5RRz11yD8 (Developer: https://github.com/DaarcyDev)"
