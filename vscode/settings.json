@@ -32,7 +32,6 @@
     "editor.cursorBlinking": "smooth",
     "editor.fontLigatures": true,
     "editor.fontWeight": "bold",
-    "workbench.colorTheme": "Andromeda Italic Bordered",
     "json.format.keepLines": true,
     "terminal.integrated.fontWeight": "bold",
     "terminal.integrated.tabs.defaultColor": "terminal.ansiWhite",
