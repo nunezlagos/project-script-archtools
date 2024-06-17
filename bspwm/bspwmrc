@@ -5,7 +5,7 @@ vmware-user-suid-wrapper &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
 
-bspc monitor -d I II III IV V VI A 
+bspc monitor -d 1 2 3 4 5 6 7 
 bspc config border_width         1
 bspc config window_gap         	12
 
@@ -22,8 +22,8 @@ bspc rule -a Screenkey manage=off
 # RESOLUTION
 
 # WALLPAPER
-# feh --bg-fill ~/.config/wallpaper/onigirl.png
-feh --bg-fill ~/.config/wallpaper/wallpaper_2.png
+feh --bg-fill ~/.config/wallpaper/onigirl.png
+#feh --bg-fill ~/.config/wallpaper/wallpaper_2.jpg
 # POLYBAR
 ~/.config/polybar/launch.sh
 
@@ -35,3 +35,5 @@ picom &
 bspc config border_width 0
 
 xsetroot -cursor_name left_ptr &
+
+
