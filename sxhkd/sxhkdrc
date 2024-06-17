@@ -130,11 +130,12 @@ super + alt + {Left,Down,Up,Right}
 
 # Firefox
 super + shift + f
-	firefox
+	 bspc desktop -f ^7 && ~/.config/polybar/scripts/focus_browser.sh
 
 # brave
 super + shift + b
-	brave
+    bspc desktop -f ^7 && brave
+
 
 ###############
 # ScreenShots #
