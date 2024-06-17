@@ -37,7 +37,7 @@ show_header() {
 }
 
 # Packages to install
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh neofetch firefox code feh fzf bashtop picom)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh neofetch firefox code feh fzf bashtop picom nvim )
 
 total=${#packages[@]}
 current=0
@@ -97,6 +97,8 @@ sleep 1
 show_header "Setting Executable Permissions"
 sudo chmod +x "$CONFIG_DIR/bspwm/bspwmrc"
 sudo chmod +x "$CONFIG_DIR/polybar/launch.sh"
+sudo chmod +x "$CONFIG_DIR/polybar/scripts/focus_browser.sh"
+sudo chmod +x "$CONFIG_DIR/polybar/scripts/focus_code.sh"
 sudo chmod +x "$CONFIG_DIR/sxhkd/sxhkdrc"
 show_progress 1 1
 sleep 1
