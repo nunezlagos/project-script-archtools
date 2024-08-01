@@ -16,6 +16,7 @@ echo -e "\e[1;32m
 \e[0m"
 
 
+
 # Function to display a progress bar
 show_progress() {
     local current=$1
@@ -41,6 +42,7 @@ packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh neofet
 
 total=${#packages[@]}
 current=0
+failed_packages=()
 
 # Show header
 show_header "Installing Packages"
@@ -50,12 +52,17 @@ for package in "${packages[@]}"; do
     sudo pacman -S --noconfirm $package &> /dev/null
     if [ $? -ne 0 ]; then
         echo -e "\nFailed to install $package"
-        exit 1
+        failed_packages+=("$package")
     fi
     current=$((current + 1))
     show_progress $current $total
     sleep 1
 done
+
+# Display failed packages
+if [ ${#failed_packages[@]} -ne 0 ]; then
+    echo -e "\n\nFailed to install the following packages: ${failed_packages[*]}"
+fi
 
 # Enable LightDM
 show_header "Enabling LightDM"
@@ -74,7 +81,7 @@ show_header "Creating Configuration Directories"
 directories=(bspwm sxhkd polybar polybar/scripts picom dunst kitty wallpaper p10k)
 for dir in "${directories[@]}"; do
     mkdir -p "$CONFIG_DIR/$dir"
-    sudo chown -R :$USER_NAME "$CONFIG_DIR/$dir"
+    sudo chown -R $USER_NAME:$USER_NAME "$CONFIG_DIR/$dir"
     sudo chmod -R 775 "$CONFIG_DIR/$dir"
 done
 
@@ -121,3 +128,4 @@ echo -e "\nConfiguration complete. Please restart your terminal or run 'exec zsh
 show_header "Credits"
 echo -e "\nCredits to: https://cheatsheetfactory.geekyhacker.com/linux/arch-lightdm"
 echo -e "YouTube video: https://www.youtube.com/watch?v=Vu5RRz11yD8 (Developer: https://github.com/DaarcyDev)"
+
