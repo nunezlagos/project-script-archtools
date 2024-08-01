@@ -67,15 +67,17 @@ sleep 1
 # User and config directories
 USER_NAME="$USER"
 CONFIG_DIR="/home/$USER_NAME/.config"
-ARCHTOOLS_DIR="/tmp/archtools"
+ARCHTOOLS_DIR="/Downloads/archtools"
 
 # Create and set permissions for configuration directories
 show_header "Creating Configuration Directories"
 directories=(bspwm sxhkd polybar polybar/scripts picom dunst kitty wallpaper p10k)
 for dir in "${directories[@]}"; do
     mkdir -p "$CONFIG_DIR/$dir"
-    sudo chmod 755 "$CONFIG_DIR/$dir"
+    sudo chown -R :$USER_NAME "$CONFIG_DIR/$dir"
+    sudo chmod -R 775 "$CONFIG_DIR/$dir"
 done
+
 show_progress 1 1
 sleep 1
 
