@@ -2,5 +2,6 @@ sudo pacman -Syu
 sudo pacman -S linux-headers
 
 En la ventana de VirtualBox de la máquina virtual, selecciona Dispositivos > Insertar imagen de CD de las Guest Additions
+
 sudo mount /dev/cdrom /mnt
 sudo /mnt/VBoxLinuxAdditions.run
