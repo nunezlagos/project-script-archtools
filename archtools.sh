@@ -47,6 +47,7 @@ log_error() {
 show_progress() {
     local current=$1
     local total=$2
+    local item_name=${3:-"elemento"}
     local bar_length=40
     local percent=$(( current * 100 / total ))
     local filled=$(( current * bar_length / total ))
@@ -54,7 +55,7 @@ show_progress() {
     local bar=$(printf "%-${filled}s" "=")
     local spaces=$(printf "%-${empty}s" " ")
 
-    printf "\r${CYAN}[%-40s]${NC} %d%%" "${bar// /=}${spaces}" "$percent"
+    printf "\r${CYAN}[%-40s]${NC} %d%% ${YELLOW}(%d/%d)${NC} ${GREEN}%s${NC}" "${bar// /=}${spaces}" "$percent" "$current" "$total" "$item_name"
 }
 
 # Function to ask for user confirmation
@@ -62,20 +63,9 @@ ask_confirmation() {
     local message=$1
     local default=${2:-"y"}
     
-    if [[ $default == "y" ]]; then
-        prompt="[Y/n]"
-    else
-        prompt="[y/N]"
-    fi
-    
-    echo -ne "${YELLOW}$message $prompt: ${NC}"
-    read -r response
-    
-    if [[ -z $response ]]; then
-        response=$default
-    fi
-    
-    [[ $response =~ ^[Yy]$ ]]
+    # Modo automático: siempre responde "sí" y solo informa
+    log_success "AUTO: $message - Respondiendo automáticamente: SÍ"
+    return 0  # Siempre retorna verdadero (sí)
 }
 
 # Function to backup existing files
@@ -83,15 +73,10 @@ backup_file() {
     local file_path=$1
     if [[ -f "$file_path" || -d "$file_path" ]]; then
         log_warning "Existing configuration found: $file_path"
-        if ask_confirmation "Do you want to backup and replace it?"; then
-            mkdir -p "$BACKUP_DIR"
-            cp -r "$file_path" "$BACKUP_DIR/"
-            log_success "Backed up to: $BACKUP_DIR/$(basename "$file_path")"
-            return 0
-        else
-            log "Skipping: $file_path"
-            return 1
-        fi
+        mkdir -p "$BACKUP_DIR"
+        cp -r "$file_path" "$BACKUP_DIR/" 2>/dev/null
+        log_success "Backed up to: $BACKUP_DIR/$(basename "$file_path")"
+        return 0
     fi
     return 0
 }
@@ -147,12 +132,8 @@ verify_user_environment() {
     # Check if user is in wheel group (for sudo access)
     if ! groups "$USER_NAME" | grep -q wheel; then
         log_warning "User '$USER_NAME' is not in wheel group"
-        if ask_confirmation "Add user to wheel group for sudo access?"; then
-            sudo usermod -aG wheel "$USER_NAME"
-            log_success "User added to wheel group"
-        else
-            log_warning "User may not have sudo access after installation"
-        fi
+        sudo usermod -aG wheel "$USER_NAME"
+        log_success "User added to wheel group"
     fi
     
     # Verify home directory exists and is accessible
@@ -192,10 +173,8 @@ verify_user_environment() {
     # Verify sudo configuration for wheel group
     if ! sudo grep -q "^%wheel.*ALL=(ALL.*ALL" /etc/sudoers; then
         log_warning "Wheel group sudo access not configured"
-        if ask_confirmation "Configure sudo access for wheel group?"; then
-            echo "%wheel ALL=(ALL) ALL" | sudo tee -a /etc/sudoers > /dev/null
-            log_success "Sudo access configured for wheel group"
-        fi
+        echo "%wheel ALL=(ALL) ALL" | sudo tee -a /etc/sudoers > /dev/null
+        log_success "Sudo access configured for wheel group"
     fi
     
     log_success "User environment verified and configured for TTY installation"
@@ -231,7 +210,7 @@ verify_packages() {
         fi
         
         current=$((current + 1))
-        show_progress $current $total
+        show_progress $current $total "Verificando $package"
         sleep 0.1
     done
     
@@ -271,7 +250,7 @@ verify_services() {
 # Verify source configuration files exist
 verify_source_configs() {
     log "Verifying source configuration files..."
-    local required_configs=("bspwm/bspwmrc" "sxhkd/sxhkdrc" "polybar/workspace.ini" "kitty/kitty.conf" ".zshrc")
+    local required_configs=("bspwm/bspwmrc" "sxhkd/sxhkdrc" "polybar/workspace.ini" "kitty/kitty.conf")
     local missing_configs=()
     
     for config in "${required_configs[@]}"; do
@@ -575,8 +554,8 @@ create_rollback_point() {
             log_success "Backed up existing .config directory"
         fi
         
-        # Backup existing shell configurations
-        for file in ".bashrc" ".zshrc" ".profile" ".xsession" ".xinitrc"; do
+        # Backup existing shell configurations (sin Zsh)
+        for file in ".bashrc" ".profile" ".xsession" ".xinitrc"; do
             if [[ -f "$user_home/$file" ]]; then
                 sudo -u "$USER_NAME" cp "$user_home/$file" "$ROLLBACK_DIR/$file.backup" 2>/dev/null || true
             fi
@@ -610,8 +589,8 @@ if [[ -n "$USER_NAME" && -d "/home/$USER_NAME" ]]; then
         echo "Restored user .config directory"
     fi
     
-    # Restore shell configurations
-    for file in ".bashrc" ".zshrc" ".profile" ".xsession" ".xinitrc"; do
+    # Restore shell configurations (sin Zsh)
+    for file in ".bashrc" ".profile" ".xsession" ".xinitrc"; do
         if [[ -f "$ROLLBACK_DIR/$file.backup" ]]; then
             sudo -u "$USER_NAME" cp "$ROLLBACK_DIR/$file.backup" "/home/$USER_NAME/$file"
             echo "Restored $file"
@@ -645,20 +624,16 @@ perform_rollback() {
         source "/tmp/archkit_rollback_info"
         
         if [[ -f "$ROLLBACK_DIR/rollback.sh" ]]; then
-            log "Performing automatic rollback..."
+            log "Performing automatic rollback due to critical error..."
             
-            if ask_confirmation "Do you want to rollback all changes made by ArchKit?"; then
-                "$ROLLBACK_DIR/rollback.sh" "$USER_NAME"
-                log_success "Rollback completed"
-                
-                # Clean up rollback files
-                rm -rf "$ROLLBACK_DIR" 2>/dev/null || true
-                rm -f "/tmp/archkit_rollback_info" 2>/dev/null || true
-                
-                return 0
-            else
-                log "Rollback skipped. Manual rollback available at: $ROLLBACK_DIR/rollback.sh"
-                return 1
+            "$ROLLBACK_DIR/rollback.sh" "$USER_NAME"
+            log_success "Rollback completed automatically"
+            
+            # Clean up rollback files
+            rm -rf "$ROLLBACK_DIR" 2>/dev/null || true
+            rm -f "/tmp/archkit_rollback_info" 2>/dev/null || true
+            
+            return 0
             fi
         fi
     fi
@@ -749,19 +724,17 @@ run_pre_installation_checks() {
         log_error "Pre-installation checks failed with critical errors!"
         log_error "Installation cannot proceed safely."
         
-        if ask_confirmation "Do you want to see detailed system information for troubleshooting?"; then
-            log "=== SYSTEM INFORMATION FOR TROUBLESHOOTING ==="
-            echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | tr -d '\"')"
-            echo "Kernel: $(uname -r)"
-            echo "Architecture: $(uname -m)"
-            echo "Memory: $(free -h | grep Mem | awk '{print $2}')"
-            echo "Disk Space: $(df -h / | awk 'NR==2 {print $4}') available"
-            echo "Graphics: $(lspci | grep -i vga | head -1)"
-            echo "Current User: $(whoami)"
-            echo "Target User: $USER_NAME"
-            echo "TTY Mode: $RUNNING_IN_TTY"
-            echo "Display: ${DISPLAY:-"Not set"}"
-        fi
+        log "=== SYSTEM INFORMATION FOR TROUBLESHOOTING ==="
+        echo "OS: $(cat /etc/os-release | grep PRETTY_NAME | cut -d= -f2 | tr -d '\"')"
+        echo "Kernel: $(uname -r)"
+        echo "Architecture: $(uname -m)"
+        echo "Memory: $(free -h | grep Mem | awk '{print $2}')"
+        echo "Disk Space: $(df -h / | awk 'NR==2 {print $4}') available"
+        echo "Graphics: $(lspci | grep -i vga | head -1)"
+        echo "Current User: $(whoami)"
+        echo "Target User: $USER_NAME"
+        echo "TTY Mode: $RUNNING_IN_TTY"
+        echo "Display: ${DISPLAY:-"Not set"}"
         
         perform_rollback "Pre-installation checks failed"
         return 1
@@ -769,12 +742,7 @@ run_pre_installation_checks() {
         log_success "All critical pre-installation checks passed!"
         
         if [[ ${#warnings[@]} -gt 0 ]]; then
-            log_warning "There are ${#warnings[@]} warnings, but installation can proceed."
-            if ! ask_confirmation "Continue with installation despite warnings?"; then
-                log "Installation cancelled by user"
-                perform_rollback "Installation cancelled by user"
-                return 1
-            fi
+            log_warning "There are ${#warnings[@]} warnings, but installation will proceed automatically."
         fi
         
         log_success "System is ready for ArchKit installation"
@@ -788,8 +756,8 @@ update_system() {
     sudo pacman -Syu --noconfirm && log_success "System updated successfully" || { log_error "Failed to update system"; exit 1; }
 }
 
-# Packages to install (alacritty removed)
-packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty zsh fafetch firefox code feh fzf bashtop picom neovim qtile xorg-server xorg-xinit xorg-xrandr xorg-xsetroot)
+# Packages to install (incluye paquetes de VirtualBox para compatibilidad, sin Zsh)
+packages=(lightdm lightdm-gtk-greeter bspwm sxhkd polybar dunst kitty fastfetch firefox feh fzf bashtop picom neovim xorg-server xorg-xinit xorg-xrandr xorg-xsetroot virtualbox-guest-utils xf86-video-vmware)
 
 # Function to install packages
 install_packages() {
@@ -812,7 +780,7 @@ install_packages() {
         fi
         
         current=$((current + 1))
-        show_progress $current $total
+        show_progress $current $total "$package"
         sleep 0.5
     done
 
@@ -823,12 +791,7 @@ install_packages() {
         log_success "All packages installed successfully"
     else
         log_warning "Failed to install: ${failed_packages[*]}"
-        if ask_confirmation "Do you want to continue anyway?"; then
-            log "Continuing with installation..."
-        else
-            log_error "Installation aborted"
-            exit 1
-        fi
+        log "Continuing with installation despite failed packages..."
     fi
 }
 
@@ -852,11 +815,9 @@ setup_lightdm() {
     local existing_dm=$(systemctl list-units --type=service --state=active | grep -E "(gdm|sddm|lightdm)" | awk '{print $1}' | head -1)
     if [[ -n "$existing_dm" ]]; then
         log_warning "Found active display manager: $existing_dm"
-        if ask_confirmation "Stop and disable $existing_dm to use LightDM?"; then
-            sudo systemctl stop "$existing_dm"
-            sudo systemctl disable "$existing_dm"
-            log_success "Stopped and disabled $existing_dm"
-        fi
+        sudo systemctl stop "$existing_dm"
+        sudo systemctl disable "$existing_dm"
+        log_success "Stopped and disabled $existing_dm"
     fi
     
     # Enable LightDM service
@@ -865,6 +826,14 @@ setup_lightdm() {
     else
         log_error "Failed to enable LightDM service"
         return 1
+    fi
+    
+    # Auto-configure VirtualBox service if detected
+    if systemd-detect-virt -v | grep -q "oracle"; then
+        log_success "AUTO: VirtualBox detectado - Configurando servicios automáticamente"
+        if sudo systemctl enable vboxservice.service 2>/dev/null; then
+            log_success "VirtualBox Guest Service habilitado automáticamente"
+        fi
     fi
     
     # Configure LightDM
@@ -883,12 +852,11 @@ setup_lightdm() {
         # TTY-specific configurations
         log "Applying TTY-optimized LightDM settings..."
         
-        # Enable autologin for TTY installations (optional but helpful)
-        if ask_confirmation "Enable autologin for user $USER_NAME? (Recommended for TTY installations)"; then
-            sudo sed -i "s/#autologin-user=.*/autologin-user=$USER_NAME/" "$lightdm_conf"
-            sudo sed -i 's/#autologin-user-timeout=.*/autologin-user-timeout=0/' "$lightdm_conf"
-            log_success "Autologin configured for $USER_NAME"
-        fi
+        # Enable autologin for TTY installations (automático)
+        log_success "AUTO: Configurando autologin para $USER_NAME automáticamente"
+        sudo sed -i "s/#autologin-user=.*/autologin-user=$USER_NAME/" "$lightdm_conf"
+        sudo sed -i 's/#autologin-user-timeout=.*/autologin-user-timeout=0/' "$lightdm_conf"
+        log_success "Autologin configurado automáticamente para $USER_NAME"
         
         # Configure session timeout and other TTY-friendly settings
         sudo sed -i 's/#session-timeout=.*/session-timeout=60/' "$lightdm_conf"
@@ -1022,7 +990,7 @@ EOF
 # Create configuration directories
 create_directories() {
     log "Creating configuration directories..."
-    local directories=(bspwm sxhkd polybar polybar/scripts picom dunst kitty wallpaper p10k)
+    local directories=(bspwm sxhkd polybar polybar/scripts picom dunst kitty wallpaper)
     
     # Ensure base config directory exists
     if [[ ! -d "$CONFIG_DIR" ]]; then
@@ -1081,8 +1049,6 @@ copy_configurations() {
         "polybar:$CONFIG_DIR/polybar"
         "kitty:$CONFIG_DIR/kitty"
         "wallpaper:$CONFIG_DIR/wallpaper"
-        "p10k/.p10k.zsh:/home/$USER_NAME/.p10k.zsh"
-        ".zshrc:/home/$USER_NAME/.zshrc"
     )
     
     local failed_copies=()
@@ -1204,28 +1170,13 @@ set_permissions() {
     find "/home/$USER_NAME/.local" -type f -exec chmod 644 {} \; 2>/dev/null
     
     # Set executable permissions (755)
-    local executables=("$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/polybar/launch.sh" "$CONFIG_DIR/polybar/scripts/"*.sh "/home/$USER_NAME/.zshrc")
+    local executables=("$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/polybar/launch.sh" "$CONFIG_DIR/polybar/scripts/"*.sh)
     for file in "${executables[@]}"; do [[ -f "$file" ]] && chmod +x "$file"; done
     
     # Set ownership recursively
-    chown -R "$USER_NAME:$USER_NAME" "/home/$USER_NAME/.config" "/home/$USER_NAME/.local" "/home/$USER_NAME/.zshrc" "/home/$USER_NAME/.p10k.zsh" 2>/dev/null
+    chown -R "$USER_NAME:$USER_NAME" "/home/$USER_NAME/.config" "/home/$USER_NAME/.local" 2>/dev/null
     
     log_success "Permissions and ownership configured"
-}
-
-# Setup zsh and Oh My Zsh
-setup_zsh() {
-    log "Setting up Zsh..."
-    
-    # Install Oh My Zsh if not present
-    if [[ ! -d "/home/$USER_NAME/.oh-my-zsh" ]]; then
-        log "Installing Oh My Zsh..."
-        sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-        log_success "Oh My Zsh installed"
-    fi
-    
-    # Change default shell to zsh
-    ask_confirmation "Change default shell to zsh?" && chsh -s "$(which zsh)" "$USER_NAME" && log_success "Default shell changed to zsh"
 }
 
 # Main function with enhanced error handling and rollback support
@@ -1303,15 +1254,9 @@ main() {
         exit 1
     fi
     
-    # Phase 7: Shell Configuration (Optional)
+    # Phase 7: Shell Configuration (Skipped - Zsh removed for automation)
     log "=== PHASE 7: SHELL CONFIGURATION ==="
-    if ask_confirmation "Do you want to set up Zsh with Oh My Zsh and Powerlevel10k theme?"; then
-        if ! setup_zsh; then
-            log_warning "Zsh setup failed, but continuing with installation"
-        fi
-    else
-        log "Skipping Zsh setup"
-    fi
+    log "Zsh configuration skipped for full automation"
     
     # Phase 8: Final Validation
     log "=== PHASE 8: FINAL VALIDATION ==="
@@ -1375,13 +1320,9 @@ main() {
     # Clean up rollback files on success
     if [[ -f "/tmp/archkit_rollback_info" ]]; then
         source "/tmp/archkit_rollback_info"
-        if ask_confirmation "Installation completed successfully. Remove rollback files?"; then
-            rm -rf "$ROLLBACK_DIR" 2>/dev/null || true
-            rm -f "/tmp/archkit_rollback_info" 2>/dev/null || true
-            log_success "Rollback files cleaned up"
-        else
-            log "Rollback files preserved at: $ROLLBACK_DIR"
-        fi
+        rm -rf "$ROLLBACK_DIR" 2>/dev/null || true
+        rm -f "/tmp/archkit_rollback_info" 2>/dev/null || true
+        log_success "Rollback files cleaned up automatically"
     fi
     
     # Display success message
@@ -1428,13 +1369,10 @@ main() {
         log "- Manual start: startx"
         echo ""
         
-        if ask_confirmation "Do you want to reboot now to complete the installation?"; then
-            log "Rebooting system in 5 seconds..."
-            sleep 5
-            sudo reboot
-        else
-            log "Please reboot manually when ready: sudo reboot"
-        fi
+        log "Installation completed. System will reboot automatically in 10 seconds..."
+        log "Press Ctrl+C to cancel automatic reboot if needed."
+        sleep 10
+        sudo reboot
     else
         log "1. Log out of your current session"
         log "2. Select 'bspwm' from the session menu in your display manager"
