@@ -9,7 +9,12 @@ echo ""
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-USER_NAME="$USER"
+# Determine actual user (works with sudo)
+if [[ $EUID -eq 0 && -n "$SUDO_USER" ]]; then
+    USER_NAME="$SUDO_USER"
+else
+    USER_NAME="$USER"
+fi
 CONFIG_DIR="/home/$USER_NAME/.config"
 BACKUP_DIR="/home/$USER_NAME/.config_backup_$(date +%Y%m%d_%H%M%S)"
 
@@ -94,8 +99,15 @@ backup_file() {
 # Function to check if running as root
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        log_error "This script should not be run as root!"
-        exit 1
+        # Allow root in TTY environments (common for system setup)
+        if [[ -z "$DISPLAY" && -z "$WAYLAND_DISPLAY" ]]; then
+            log_warning "Running as root in TTY environment - this is acceptable for system setup"
+            export SUDO_USER_NAME="${SUDO_USER:-$USER}"
+            [[ -z "$SUDO_USER_NAME" || "$SUDO_USER_NAME" == "root" ]] && { log_error "Cannot determine target user. Please run as: sudo -u username $0"; exit 1; }
+        else
+            log_error "This script should not be run as root in graphical environments!"
+            exit 1
+        fi
     fi
 }
 
@@ -107,9 +119,19 @@ detect_environment() {
 # Verify user environment
 verify_user_environment() {
     log "Verifying user environment..."
-    [[ "$USER" != "$USER_NAME" ]] && log_warning "Script user ($USER) differs from target user ($USER_NAME)"
-    [[ ! -d "/home/$USER_NAME" ]] && log_error "Home directory /home/$USER_NAME does not exist!" && exit 1
-    [[ ! -w "/home/$USER_NAME" ]] && log_error "No write permission to /home/$USER_NAME" && exit 1
+    
+    # When running as root via sudo, check the actual user
+    if [[ $EUID -eq 0 ]]; then
+        log "Running as root - target user: $USER_NAME"
+        [[ ! -d "/home/$USER_NAME" ]] && log_error "Home directory /home/$USER_NAME does not exist!" && exit 1
+        # Create home directory if it doesn't exist (shouldn't happen but just in case)
+        mkdir -p "/home/$USER_NAME" 2>/dev/null || true
+    else
+        [[ "$USER" != "$USER_NAME" ]] && log_warning "Script user ($USER) differs from target user ($USER_NAME)"
+        [[ ! -d "/home/$USER_NAME" ]] && log_error "Home directory /home/$USER_NAME does not exist!" && exit 1
+        [[ ! -w "/home/$USER_NAME" ]] && log_error "No write permission to /home/$USER_NAME" && exit 1
+    fi
+    
     log_success "User environment verified"
 }
 
