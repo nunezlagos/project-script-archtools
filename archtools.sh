@@ -72,7 +72,7 @@ ensure_dirs(){
 }
 
 backup_if_exists(){
-  local path="$1"; [[ -e "$path" ]] || return 0
+  local path="$1"; [ -e "$path" ] || return 0
   mkdir -p "$BACKUP_DIR"; cp -r "$path" "$BACKUP_DIR/" 2>/dev/null || true
   warn "Respaldo: $BACKUP_DIR/$(basename "$path")"
 }
@@ -94,7 +94,7 @@ copy_configs(){
   for src in "${!MAP[@]}"; do
     dest="${MAP[$src]}"
     backup_if_exists "$dest"
-    if [[ -d "$src" ]]; then
+    if [ -d "$src" ]; then
       mkdir -p "$dest"; cp -r "$src/"* "$dest/" 2>/dev/null || true
     else
       mkdir -p "$(dirname "$dest")"; cp "$src" "$dest" 2>/dev/null || true
