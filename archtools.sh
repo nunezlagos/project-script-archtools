@@ -27,7 +27,9 @@ packages=(
   xorg-server xorg-xinit
   lightdm lightdm-gtk-greeter
   bspwm sxhkd polybar picom dunst feh kitty
-  nano flatpak
+  nano flatpak rofi pavucontrol
+  networkmanager network-manager-applet
+  udisks2 udiskie
 )
 
 install_packages(){
@@ -66,7 +68,7 @@ EOF
 
 ensure_dirs(){
   mkdir -p "$CONFIG_DIR" && ok "Directorio base: $CONFIG_DIR"
-  for d in bspwm sxhkd polybar polybar/scripts picom dunst kitty alacritty wallpaper; do
+  for d in bspwm sxhkd polybar polybar/scripts picom dunst kitty alacritty wallpaper rofi; do
     mkdir -p "$CONFIG_DIR/$d"
   done
 }
@@ -89,6 +91,7 @@ copy_configs(){
     ["$SCRIPT_DIR/dunst"]="$CONFIG_DIR/dunst"
     ["$SCRIPT_DIR/kitty/kitty.conf"]="$CONFIG_DIR/kitty/kitty.conf"
     ["$SCRIPT_DIR/alacritty/alacritty.yml"]="$CONFIG_DIR/alacritty/alacritty.yml"
+    ["$SCRIPT_DIR/rofi/config.rasi"]="$CONFIG_DIR/rofi/config.rasi"
     ["$SCRIPT_DIR/wallpaper"]="$CONFIG_DIR/wallpaper"
   )
   for src in "${!MAP[@]}"; do
@@ -110,15 +113,72 @@ enable_lightdm(){
   ok "LightDM habilitado"
 }
 
+enable_networkmanager(){
+  if systemctl list-unit-files | grep -q '^NetworkManager.service'; then
+    sudo systemctl enable NetworkManager >/dev/null 2>&1 || warn "No se pudo habilitar NetworkManager"
+    sudo systemctl start NetworkManager >/dev/null 2>&1 || true
+    ok "NetworkManager habilitado"
+  else
+    warn "NetworkManager no disponible (paquete no instalado?)"
+  fi
+}
+
+write_command_list(){
+  if [ -f "$SCRIPT_DIR/command-list" ]; then
+    sudo cp "$SCRIPT_DIR/command-list" /command-list && ok "Archivo de comandos: /command-list"
+    cp "$SCRIPT_DIR/command-list" "$HOME_DIR/command-list" && ok "Copia en home: $HOME_DIR/command-list"
+  else
+    sudo tee /command-list >/dev/null <<'EOF'
+# Command List (resumen para Kitty)
+
+## Lanzadores
+- rofi: `rofi -show drun` (apps) | `rofi -show run` (comandos)
+- terminal: `kitty`
+- navegador: `brave` (wrapper) | `flatpak run com.brave.Browser`
+
+## Gestión del sistema
+- audio: `pavucontrol`
+- red: `nm-applet` (tray) | `nm-connection-editor`
+- dispositivos: `udiskie --tray` | `udisksctl`
+
+## BSPWM / ventanas
+- reiniciar WM: `bspc wm -r`
+- mover foco: `bspc node -f {north|south|east|west}`
+- mover ventana: `bspc node -v <dx> <dy>`
+- alternar estado: `bspc node -t {tiled|floating|fullscreen}`
+
+## Barras y notificaciones
+- polybar: `~/.config/polybar/launch.sh`
+- picom: `picom --config ~/.config/picom/picom.conf`
+- dunst: `dunst`
+
+## Fondos de pantalla
+- `feh --bg-fill ~/.config/wallpaper/<imagen>`
+
+## Configuración
+- refrescar configs: `tools/refresh-config.sh <componente|all>`
+- componentes típicos: `bspwm sxhkd polybar picom dunst kitty rofi wallpaper`
+
+## Servicios
+- activar display manager: `sudo systemctl enable lightdm && sudo systemctl restart lightdm`
+- activar red: `sudo systemctl enable NetworkManager && sudo systemctl start NetworkManager`
+
+EOF
+    ok "Archivo de comandos: /command-list"
+    cp /command-list "$HOME_DIR/command-list" 2>/dev/null || true
+  fi
+}
+
 final_tips(){
   echo ""
   ok "Instalación lista"
   echo "- Editor por defecto: nano"
   echo "- Navegador: Brave (Flatpak)"
   echo "- Refrescar configs: tools/refresh-config.sh <componente|all>"
-  echo "  Componentes: bspwm sxhkd polybar picom dunst kitty alacritty wallpaper"
+  echo "  Componentes: bspwm sxhkd polybar picom dunst kitty rofi wallpaper"
   echo "- Nota: si Brave no abre con 'brave', usar: flatpak run com.brave.Browser"
   echo "- Wrapper: ~/.local/bin/brave (asegura PATH incluye ~/.local/bin)"
+  echo "- Comandos: ver /command-list (bonito para Kitty)"
 }
 
 main(){
@@ -129,7 +189,9 @@ main(){
   ensure_dirs
   copy_configs
   enable_lightdm
+  enable_networkmanager
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
+  write_command_list
   final_tips
 }
 

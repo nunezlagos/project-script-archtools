@@ -1,0 +1,61 @@
+/* Rofi minimal config respetando colores de Kitty/Polybar */
+configuration {
+  modi: "drun,run";
+  show-icons: true;
+  icon-theme: "Papirus";
+  display-drun: "Apps";
+  display-run: "Run";
+  sidebar-mode: false;
+}
+
+* {
+  bg:        #1b1b1b;   /* kitty background */
+  fg:        #f1f4fd;   /* kitty foreground */
+  accent:    #FEC006;   /* polybar accent/yellow */
+  selbg:     #292C3C;   /* kitty inactive_tab_background */
+  selfg:     #232634;   /* kitty active_tab_foreground */
+  border:    #CA9EE6;   /* kitty active_tab_background */
+
+  background-color: @bg;
+  text-color:       @fg;
+  border-color:     @border;
+  border:           2px;
+  padding:          6px;
+}
+
+window {
+  width: 38%;
+  border: 2px;
+}
+
+mainbox { padding: 8px; }
+
+inputbar {
+  children:   [ prompt, entry ];
+  padding:    6px;
+  border:     0 0 2px 0;
+  border-color: @accent;
+}
+
+prompt { text-color: @accent; }
+
+entry {
+  placeholder: "Buscar…";
+}
+
+listview {
+  lines: 10;
+  fixed-height: true;
+  scrollbar: false;
+}
+
+element { padding: 6px; }
+element-icon { size: 24px; }
+
+element-text { text-color: @fg; }
+element selected {
+  background-color: @selbg;
+  text-color: @selfg;
+}
+
+message { padding: 6px; }

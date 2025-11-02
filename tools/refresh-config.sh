@@ -49,21 +49,58 @@ copy_component(){
       copy_dir_if_exists "$ROOT_DIR/dunst" "$CONFIG_DIR/dunst";;
     kitty)
       copy_file_if_exists "$ROOT_DIR/kitty/kitty.conf" "$CONFIG_DIR/kitty/kitty.conf";;
-    alacritty)
-      copy_file_if_exists "$ROOT_DIR/alacritty/alacritty.yml" "$CONFIG_DIR/alacritty/alacritty.yml";;
+    rofi)
+      copy_file_if_exists "$ROOT_DIR/rofi/config.rasi" "$CONFIG_DIR/rofi/config.rasi";;
     wallpaper)
       copy_dir_if_exists "$ROOT_DIR/wallpaper" "$CONFIG_DIR/wallpaper";;
     all)
-      for c in bspwm sxhkd polybar picom dunst kitty alacritty wallpaper; do copy_component "$c"; done;;
+      for c in bspwm sxhkd polybar picom dunst kitty rofi wallpaper; do copy_component "$c"; done;;
     *) err "Componente desconocido: $name"; exit 1;;
   esac
   ok "Actualizado: $name"
 }
 
+restart_component(){
+  local name="$1"
+  case "$name" in
+    bspwm)
+      command -v bspc >/dev/null 2>&1 && bspc wm -r || warn "bspc no disponible";;
+    sxhkd)
+      pkill -USR1 -x sxhkd 2>/dev/null || warn "sxhkd no corriendo";;
+    polybar)
+      pkill -x polybar 2>/dev/null || true
+      if [[ -x "$CONFIG_DIR/polybar/launch.sh" ]]; then
+        "$CONFIG_DIR/polybar/launch.sh" &
+      else
+        warn "launch.sh de polybar no encontrado"
+      fi;;
+    picom)
+      pkill -x picom 2>/dev/null || true
+      command -v picom >/dev/null 2>&1 && picom --config "$CONFIG_DIR/picom/picom.conf" &;;
+    dunst)
+      pkill -x dunst 2>/dev/null || true
+      command -v dunst >/dev/null 2>&1 && dunst &;;
+    rofi)
+      : ;; # no daemon
+    kitty)
+      warn "Reabre Kitty para aplicar cambios";;
+    wallpaper)
+      if command -v feh >/dev/null 2>&1; then
+        for img in "$CONFIG_DIR/wallpaper"/*; do
+          [[ -f "$img" ]] || continue
+          feh --bg-fill "$img" && break
+        done
+      fi;;
+    all)
+      for c in bspwm sxhkd polybar picom dunst; do restart_component "$c"; done;;
+  esac
+}
+
 if [[ -z "$1" ]]; then
   echo "Uso: $0 <componente|all>"
-  echo "Componentes: bspwm sxhkd polybar picom dunst kitty alacritty wallpaper"
+  echo "Componentes: bspwm sxhkd polybar picom dunst kitty rofi wallpaper"
   exit 1
 fi
 
 copy_component "$1"
+restart_component "$1"

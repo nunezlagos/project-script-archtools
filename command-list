@@ -1,0 +1,78 @@
+# Command List (resumen para Kitty)
+
+## Atajos Globales (sxhkd)
+- `super + Return` → Abrir terminal (kitty)
+- `super + d` → Rofi (comandos) `rofi -show run`
+- `super + Escape` → Recargar sxhkd
+- `super + alt + q` → Salir de bspwm
+- `super + alt + r` → Reiniciar bspwm
+- `super + w` → Cerrar ventana
+- `super + shift + w` → Forzar kill de ventana
+
+## Lanzadores personalizados (sxhkd)
+- `super + shift + f` → Ir a escritorio 7 y enfocar navegador (Firefox)
+- `super + shift + b` → Ir a escritorio 7 y abrir Brave (Flatpak)
+
+## BSPWM — Navegación y swap
+- `super + ←/↓/↑/→` → Foco a {west,south,north,east}
+- `super + shift + ←/↓/↑/→` → Intercambiar con vecino {west,south,north,east}
+- `super + p` / `super + b` / `super + ,` / `super + .` → Foco @{parent,brother,first,second}
+- `super + c` / `super + shift + c` → Foco siguiente / anterior
+- `super + [` / `super + ]` → Escritorio anterior / siguiente
+- `super + grave` / `super + Tab` → Último nodo / último escritorio
+- `super + o` / `super + i` → Foco older/newer en el histórico
+- `super + {1..9,0}` → Foco al escritorio N
+- `super + shift + {1..9,0}` → Enviar ventana al escritorio N
+
+## BSPWM — Estado y flags
+- `super + t` / `super + shift + t` → tiled / pseudo_tiled
+- `super + s` → floating
+- `super + f` → fullscreen
+- `super + ctrl + m` → marcado
+- `super + ctrl + x` → lock
+- `super + ctrl + y` → sticky
+- `super + ctrl + z` → private
+
+## BSPWM — Preselección y movimiento
+- `super + ctrl + alt + ←/↓/↑/→` → Preseleccionar dirección
+- `super + ctrl + {1..9}` → Preseleccionar ratio 0.{1..9}
+- `super + ctrl + space` → Cancelar preselección nodo
+- `super + ctrl + alt + space` → Cancelar preselección escritorio
+- `super + ctrl + ←/↓/↑/→` → Mover ventana flotante (20px)
+- `super + alt + ←/↓/↑/→` → Resize custom `~/.config/bspwm/scripts/bspwm_resize`
+
+## Screenshots (sxhkd)
+- `Print` (liberación `@`) + nada → Selección
+- `Print` + `ctrl` → Pantalla completa
+- `Print` + `alt` → Ventana
+
+## Kitty — Ventanas y tabs
+- `alt + enter` → Nueva ventana
+- `alt + w` → Cerrar ventana
+- `ctrl + tab` → Siguiente ventana
+- `alt + tab` → Ventana anterior
+- `alt + t` → Nueva tab
+- `alt + q` → Cerrar tab
+- `alt + right/left` → Siguiente/Anterior tab
+- `alt + up/down` → Mover tab adelante/atrás
+- `alt + n` → Renombrar tab
+- `alt + l` → Siguiente layout
+- `alt + kp_add` / `alt + kp_subtract` / `alt + backspace` → Aumentar/Disminuir/Reset tamaño fuente
+- `alt + c` / `alt + v` → Copiar/Pegar
+- `alt + f5` → Recargar configuración
+
+## Comandos de apps
+- Rofi apps: `rofi -show drun`
+- Rofi comandos: `rofi -show run`
+- Brave: `brave` (wrapper) | `flatpak run com.brave.Browser`
+- Audio: `pavucontrol`
+- Red: `nm-applet` (tray) | `nm-connection-editor`
+- Dispositivos: `udiskie --tray` | `udisksctl`
+
+## Servicios y utilidades
+- BSPWM reiniciar: `bspc wm -r`
+- Polybar: `~/.config/polybar/launch.sh`
+- Picom: `picom --config ~/.config/picom/picom.conf`
+- Dunst: `dunst`
+- Fondo: `feh --bg-fill ~/.config/wallpaper/<imagen>`
+- Refrescar configs: `tools/refresh-config.sh <componente|all>`
