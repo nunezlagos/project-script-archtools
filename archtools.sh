@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Salida minimalista y progreso
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=13
+TOTAL_STEPS=15
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -46,7 +46,7 @@ packages=(
   bspwm sxhkd polybar picom dunst feh kitty
   nano rofi pavucontrol firefox
   networkmanager network-manager-applet
-  udisks2 udiskie
+  udisks2 udiskie libnotify
   yazi fastfetch
 )
 

@@ -25,6 +25,10 @@ bspc rule -a pavucontrol state=floating center=on
 bspc rule -a nm-connection-editor state=floating center=on
 bspc rule -a Nm-connection-editor state=floating center=on
 
+# Audio graph tools
+bspc rule -a helvum state=floating center=on
+bspc rule -a qpwgraph state=floating center=on
+
 # RESOLUTION
 
 # WALLPAPER
