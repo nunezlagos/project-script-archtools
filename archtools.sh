@@ -169,15 +169,21 @@ configure_lightdm_greeter(){
     sudo cp "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.css" "$etc_dir/lightdm-gtk-greeter.css" >/dev/null 2>&1 || warn "No se pudo copiar greeter.css"
   fi
 
-  # Copiar fondo al sistema (preferir wallpaper onigirl si existe)
-  local src1="$CONFIG_DIR/wallpaper/onigirl.png"
-  local src2="$SCRIPT_DIR/wallpaper/onigirl.png"
-  if [[ -f "$src1" ]]; then
-    sudo install -Dm644 "$src1" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar fondo"
-  elif [[ -f "$src2" ]]; then
-    sudo install -Dm644 "$src2" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar fondo"
+  # Copiar fondo al sistema (preferir wallpaper login.png; fallback a onigirl.png)
+  local src_login_1="$CONFIG_DIR/wallpaper/login.png"
+  local src_login_2="$SCRIPT_DIR/wallpaper/login.png"
+  local src_oni_1="$CONFIG_DIR/wallpaper/onigirl.png"
+  local src_oni_2="$SCRIPT_DIR/wallpaper/onigirl.png"
+  if [[ -f "$src_login_1" ]]; then
+    sudo install -Dm644 "$src_login_1" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar login.png"
+  elif [[ -f "$src_login_2" ]]; then
+    sudo install -Dm644 "$src_login_2" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar login.png"
+  elif [[ -f "$src_oni_1" ]]; then
+    sudo install -Dm644 "$src_oni_1" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar onigirl.png"
+  elif [[ -f "$src_oni_2" ]]; then
+    sudo install -Dm644 "$src_oni_2" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar onigirl.png"
   else
-    warn "Wallpaper onigirl.png no encontrado; mantengo fondo por defecto"
+    warn "No se encontró login.png ni onigirl.png; mantengo fondo por defecto"
   fi
 
   progress_step "Greeter de LightDM configurado"
