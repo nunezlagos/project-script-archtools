@@ -19,6 +19,12 @@ bspc rule -a mplayer2 state=floating
 bspc rule -a Kupfer.py focus=on
 bspc rule -a Screenkey manage=off
 
+# Floating rules for control center utilities
+bspc rule -a Pavucontrol state=floating center=on
+bspc rule -a pavucontrol state=floating center=on
+bspc rule -a nm-connection-editor state=floating center=on
+bspc rule -a Nm-connection-editor state=floating center=on
+
 # RESOLUTION
 
 # WALLPAPER

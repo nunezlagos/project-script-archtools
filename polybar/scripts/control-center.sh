@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Minimal control center with Rofi
-CHOICE=$(printf "Internet\nAudio\nWallpapers\nDevices\nExit" | rofi -dmenu -p "Control" -theme ~/.config/rofi/config.rasi)
+# Add simple system actions at the end, separated by a blank line.
+CHOICE=$(printf "Internet\nAudio\nWallpapers\nDevices\n\nSuspend\nReboot\nPoweroff\nExit" | rofi -dmenu -i -p "Control" -theme ~/.config/rofi/config.rasi)
 
 case "${CHOICE:-}" in
   Internet)
@@ -20,6 +21,15 @@ case "${CHOICE:-}" in
     ;;
   Devices)
     GTK_THEME=Adwaita:dark udiskie --tray &
+    ;;
+  Suspend)
+    systemctl suspend &
+    ;;
+  Reboot)
+    systemctl reboot &
+    ;;
+  Poweroff)
+    systemctl poweroff &
     ;;
   Exit) ;;
   *) ;;

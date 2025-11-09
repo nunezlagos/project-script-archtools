@@ -9,7 +9,7 @@ if [ ${#IMAGES[@]} -eq 0 ]; then
   exit 0
 fi
 
-CHOICE=$(printf "%s\n" "${IMAGES[@]}" | sed "s|$WALL_DIR/||" | rofi -dmenu -p "Wallpaper" -theme ~/.config/rofi/config.rasi)
+CHOICE=$(printf "%s\n" "${IMAGES[@]}" | sed "s|$WALL_DIR/||" | rofi -dmenu -i -p "Wallpaper" -theme ~/.config/rofi/config.rasi)
 
 if [ -n "${CHOICE:-}" ]; then
   IMG="$WALL_DIR/$CHOICE"

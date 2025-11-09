@@ -1,11 +1,12 @@
 /* Rofi minimal, clean and professional */
 configuration {
   modi: "drun,run";
-  show-icons: true;
+  show-icons: false;
   icon-theme: "Papirus";
   display-drun: "Apps";
   display-run: "Run";
   sidebar-mode: false;
+  case-sensitive: false;
 }
 
 * {
