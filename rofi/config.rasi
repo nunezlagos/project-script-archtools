@@ -1,4 +1,6 @@
-/* Rofi minimal, clean and professional */
+/* ROFI SQUARED THEME USING THE NORD PALETTE  */
+/* Author: Newman Sanchez ( `https://github.com/newmanls)`  */
+
 configuration {
   modi: "drun,run";
   show-icons: true;
@@ -10,46 +12,95 @@ configuration {
 }
 
 * {
-  bg:        #1a1b26;   /* kitty background */
-  fg:        #c0caf5;   /* kitty white */
-  accent:    #e0af68;   /* kitty yellow */
-  selbg:     #28344a;   /* kitty selection background */
-  selfg:     #c0caf5;   /* selected text */
-  border:    #414868;   /* kitty black tone */
+    font:   "FiraCode Nerd Font Medium 12";
 
-  background-color: @bg;
-  text-color:       @fg;
-  border-color:     @border;
-  border:           1px;
-  border-radius:    5px;
-  padding:          6px;
+    bg0:     #2E3440;
+    bg1:     #3B4252;
+    fg0:     #D8DEE9;
+
+    accent-color:     #88C0D0;
+    urgent-color:     #EBCB8B;
+
+    background-color:   transparent;
+    text-color:         @fg0;
+
+    margin:     0;
+    padding:    0;
+    spacing:    0;
 }
 
-window { width: 32%; border: 1px; border-radius: 5px; }
+window {
+    location:   center;
+    width:      480;
 
-mainbox { padding: 8px; }
+    background-color:   @bg0;
+}
 
 inputbar {
-  children:   [ prompt, entry ];
-  padding:    6px;
-  border:     0 0 1px 0;
-  border-color: @accent;
+    spacing:    8px;
+    padding:    8px;
+
+    background-color:   @bg1;
 }
 
-prompt { text-color: @accent; }
-
-entry {
-  placeholder: "Buscar…";
+prompt, entry, element-icon, element-text {
+    vertical-align: 0.5;
 }
 
-listview { lines: 8; fixed-height: true; scrollbar: false; }
+prompt {
+    text-color: @accent-color;
+}
 
-element { padding: 6px; }
-element-icon { size: 24px; }
+textbox {
+    padding:            8px;
+    background-color:   @bg1;
+}
 
-element-text { text-color: @fg; }
-element selected { background-color: @selbg; text-color: @selfg; }
-element { border-radius: 5px; }
-entry { padding: 6px; }
+listview {
+    padding:    4px 0;
+    lines:      8;
+    columns:    1;
 
-message { padding: 6px; }
+    fixed-height:   false;
+}
+
+element {
+    padding:    8px;
+    spacing:    8px;
+}
+
+element normal normal {
+    text-color: @fg0;
+}
+
+element normal urgent {
+    text-color: @urgent-color;
+}
+
+element normal active {
+    text-color: @accent-color;
+}
+
+element alternate active {
+    text-color: @accent-color;
+}
+
+element selected {
+    text-color: @bg0;
+}
+
+element selected normal, element selected active {
+    background-color:   @accent-color;
+}
+
+element selected urgent {
+    background-color:   @urgent-color;
+}
+
+element-icon {
+    size:   0.8em;
+}
+
+element-text {
+    text-color: inherit;
+}

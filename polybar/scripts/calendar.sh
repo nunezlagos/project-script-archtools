@@ -39,7 +39,8 @@ launch_kitty_calcurse(){
     -o initial_window_height=520 \
     -o background_opacity=1.0 \
     -o background=#0f111a \
-    -e calcurse &
+    -o foreground=#c0caf5 \
+    -e bash -lc 'env TERM=xterm-256color calcurse || cal' &
   sleep 1
   bspc rule -r CalendarPopup || true
 }

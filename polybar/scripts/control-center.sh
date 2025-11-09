@@ -11,10 +11,15 @@ confirm(){
 }
 
 audio_menu(){
-  local items="Pavucontrol"
-  command -v helvum >/dev/null 2>&1 && items="$items\nHelvum"
-  command -v qpwgraph >/dev/null 2>&1 && items="$items\nQpwgraph"
-  local pick=$(printf "%s\n" "$items" | rofi -dmenu -i -p "Audio" -theme ~/.config/rofi/config.rasi)
+  local items
+  items="Pavucontrol\x00icon\x1faudio-card"
+  if command -v helvum >/dev/null 2>&1; then
+    items="$items\nHelvum\x00icon\x1faudio-card"
+  fi
+  if command -v qpwgraph >/dev/null 2>&1; then
+    items="$items\nQpwgraph\x00icon\x1faudio-card"
+  fi
+  local pick=$(printf "%s\n" "$items" | rofi -dmenu -i -p "Audio" -show-icons -theme ~/.config/rofi/config.rasi)
   case "$pick" in
     Pavucontrol) GTK_THEME=Adwaita:dark pavucontrol & ;;
     Helvum) GTK_THEME=Adwaita:dark helvum & ;;
@@ -23,7 +28,17 @@ audio_menu(){
   esac
 }
 
-CHOICE=$(printf "Network\nAudio\nWallpapers\nDevices\n\nSuspend\nReboot\nPoweroff\nExit" | rofi -dmenu -i -p "Control" -theme ~/.config/rofi/config.rasi)
+CHOICE=$(cat <<'EOF' | rofi -dmenu -i -p "Control" -show-icons -theme ~/.config/rofi/config.rasi
+Network\x00icon\x1fnetwork-wireless
+Audio\x00icon\x1faudio-volume-high
+Wallpapers\x00icon\x1fimage-x-generic
+Devices\x00icon\x1fcomputer
+Suspend\x00icon\x1fsystem-suspend
+Reboot\x00icon\x1fsystem-reboot
+Poweroff\x00icon\x1fsystem-shutdown
+Exit\x00icon\x1fsystem-log-out
+EOF
+)
 
 case "${CHOICE:-}" in
   Network)
