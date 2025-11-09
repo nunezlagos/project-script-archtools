@@ -56,11 +56,7 @@ case "${CHOICE:-}" in
     audio_menu
     ;;
   *Wallpapers*)
-    if command -v nitrogen >/dev/null 2>&1; then
-      GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh Nitrogen nitrogen
-    else
-      ~/.config/polybar/scripts/wallpaper.sh &
-    fi
+    ~/.config/polybar/scripts/wallpaper.sh &
     ;;
   *Devices*)
     bash ~/.config/polybar/scripts/devices.sh &

@@ -1,47 +1,140 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WALL_DIR="$HOME/.config/wallpaper"
-mapfile -t IMAGES < <(find "$WALL_DIR" -maxdepth 1 -type f \( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp' \) | sort)
+# Wallpapers con miniaturas, previsualización y confirmación
+# Este script funciona como modo script de Rofi y también puede lanzarse directo.
 
-if [ ${#IMAGES[@]} -eq 0 ]; then
-  notify-send "Wallpapers" "No se encontraron imágenes en $WALL_DIR" || true
-  exit 0
-fi
+WALL_DIR="${WALL_DIR:-$HOME/.config/wallpaper}"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/wallpaper_preview"
+STATE_SEL="$CACHE_DIR/selected.txt"
+STATE_PID="$CACHE_DIR/preview.pid"
+mkdir -p "$CACHE_DIR"
+
+list_images(){
+  find "$WALL_DIR" -maxdepth 1 -type f \
+    \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' -o -iname '*.bmp' \) \
+    -printf '%p\n' | sort
+}
 
 apply_wallpaper(){
   local img="$1"
-  # Wayland con swww (transición real)
+  if [ -z "$img" ]; then return 0; fi
+  # Wayland con swww (transición radial desde el centro, imagen nítida)
   if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && command -v swww >/dev/null 2>&1; then
     swww init 2>/dev/null || true
-    swww img "$img" --transition-type wipe --transition-duration 0.7 --transition-fps 60 --transition-step 90
+    # Efecto "grow" desde el centro (50%,50%), easing suave
+    swww img "$img" \
+      --transition-type grow \
+      --transition-pos 50%,50% \
+      --transition-bezier 0.19,1,0.22,1 \
+      --transition-duration 1.1 \
+      --transition-fps 60
   else
-    # X11: transición breve con overlay de mpv; luego aplica con feh
+    # X11: usa overlay para transición suave y luego aplica con feh
     if command -v mpv >/dev/null 2>&1; then
+      # Primero detenemos preview (si existe) para evitar solapamiento
+      stop_preview || true
+      # 1) Preview difusa desde el centro (corta) y 2) Imagen nítida con fade-in
+      # Paso 2: imagen nítida con fade-in para dar sensación de "aclara desde el centro"
       mpv "$img" --fs --no-border --ontop --really-quiet \
-          --image-display-duration=0.8 --keep-open=no --no-input-default-bindings \
-          --vf=lavfi=[fade=in:0:45] >/dev/null 2>&1 &
-      sleep 0.5
+          --image-display-duration=1.0 --keep-open=no --no-input-default-bindings \
+          --vf=lavfi=[fade=in:0:60] >/dev/null 2>&1 &
+      echo $! > "$STATE_PID"
+      sleep 0.50
     fi
     feh --bg-fill "$img"
-    pkill -f "mpv.* --fs.*$(printf %q "$img")" >/dev/null 2>&1 || true
+    # Apaga overlay para simular transición de salida con picom
+    if [ -f "$STATE_PID" ]; then
+      kill "$(cat "$STATE_PID")" >/dev/null 2>&1 || true
+      rm -f "$STATE_PID"
+    fi
   fi
 }
 
-## Flotar y centrar la ventana de Rofi temporalmente
-bspc rule -a Rofi -o state=floating center=true
+start_preview(){
+  local img="$1"
+  if [ -z "$img" ]; then return 0; fi
+  # Vista previa en pantalla (encima), que se desvanece con picom
+  if command -v mpv >/dev/null 2>&1; then
+    # Preview con blur y ligera viñeta para simular "todo en blur" desde el centro
+    mpv "$img" --fs --no-border --ontop --really-quiet --image-display-duration=inf \
+        --keep-open=yes --no-input-default-bindings \
+        --vf=lavfi=[gblur=sigma=16:steps=2, vignette=0.25:0.45, fade=in:0:45] >/dev/null 2>&1 &
+    echo $! > "$STATE_PID"
+    sleep 0.25
+  elif command -v feh >/dev/null 2>&1; then
+    feh -F -Z --no-fehbg --class WallpaperPreview --title "Preview" "$img" >/dev/null 2>&1 &
+    echo $! > "$STATE_PID"
+    sleep 0.25
+  fi
+}
 
-# Construye lista con glifos en lugar de icon markup
-CHOICE=$(printf "%s\n" "${IMAGES[@]}" | while read -r img; do 
-  bn="${img##*/}"; printf "  %s\n" "$bn"; 
-done | rofi -dmenu -i -p "Wallpapers" -theme ~/.config/rofi/config.rasi)
+stop_preview(){
+  if [ -f "$STATE_PID" ]; then
+    kill "$(cat "$STATE_PID")" >/dev/null 2>&1 || true
+    rm -f "$STATE_PID"
+  fi
+}
 
-bspc rule -r Rofi || true
+print_list(){
+  local imgs
+  mapfile -t imgs < <(list_images)
+  if [ ${#imgs[@]} -eq 0 ]; then
+    echo "No se encontraron imágenes en $WALL_DIR"
+    return 0
+  fi
+  for img in "${imgs[@]}"; do
+    bn="${img##*/}"
+    printf "%s\0icon\x1f%s\n" "$bn" "$img"
+  done
+}
 
-if [ -n "${CHOICE:-}" ]; then
-  # Elimina el prefijo del glifo "  " para obtener el nombre real
-  bn="${CHOICE#  }"
-  IMG="$WALL_DIR/$bn"
-  apply_wallpaper "$IMG"
-  notify-send "Wallpaper aplicado" "$bn" || true
+case "${ROFI_RETV:-0}" in
+  0)
+    # Primera invocación: lista con miniaturas
+    print_list
+    ;;
+  1)
+    sel="$(cat)"
+    if [ "$sel" = "Confirmar" ]; then
+      if [ -f "$STATE_SEL" ]; then
+        img="$(cat "$STATE_SEL")"
+        apply_wallpaper "$img"
+        stop_preview
+        rm -f "$STATE_SEL" || true
+      fi
+      exit 0
+    elif [ "$sel" = "Cancelar" ]; then
+      stop_preview
+      rm -f "$STATE_SEL" || true
+      print_list
+    else
+      img="$WALL_DIR/$sel"
+      if [ -f "$img" ]; then
+        printf "%s" "$img" > "$STATE_SEL"
+        start_preview "$img"
+        printf "Confirmar\nCancelar\n"
+      else
+        match="$(list_images | grep -F "/$sel" | head -n1 || true)"
+        if [ -n "$match" ]; then
+          printf "%s" "$match" > "$STATE_SEL"
+          start_preview "$match"
+          printf "Confirmar\nCancelar\n"
+        else
+          print_list
+        fi
+      fi
+    fi
+    ;;
+  *)
+    print_list
+    ;;
+esac
+
+if [ -z "${ROFI_RETV:-}" ]; then
+  bspc rule -a Rofi -o state=floating center=true
+  rofi -show wallpapers -modi "wallpapers:$0" -show-icons \
+       -theme ~/.config/rofi/config.rasi \
+       -theme-str 'element-icon { size: 80; } listview { lines: 10; }'
+  bspc rule -r Rofi || true
 fi
