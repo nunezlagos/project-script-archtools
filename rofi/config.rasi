@@ -9,12 +9,12 @@ configuration {
 }
 
 * {
-  bg:        #1b1b1b;   /* kitty background */
-  fg:        #f1f4fd;   /* kitty foreground */
+  bg:        #000000;   /* polybar fg inverse minimal */
+  fg:        #FFFFFF;   /* polybar white */
   accent:    #FEC006;   /* polybar accent/yellow */
-  selbg:     #292C3C;   /* kitty inactive_tab_background */
-  selfg:     #232634;   /* kitty active_tab_foreground */
-  border:    #CA9EE6;   /* kitty active_tab_background */
+  selbg:     #1b1b1b;   /* minimal dark */
+  selfg:     #FEC006;   /* accent for selection text */
+  border:    #FEC006;   /* accent border */
 
   background-color: @bg;
   text-color:       @fg;
@@ -23,10 +23,7 @@ configuration {
   padding:          6px;
 }
 
-window {
-  width: 38%;
-  border: 2px;
-}
+window { width: 34%; border: 2px; }
 
 mainbox { padding: 8px; }
 
@@ -43,19 +40,12 @@ entry {
   placeholder: "Buscar…";
 }
 
-listview {
-  lines: 10;
-  fixed-height: true;
-  scrollbar: false;
-}
+listview { lines: 9; fixed-height: true; scrollbar: false; }
 
 element { padding: 6px; }
 element-icon { size: 24px; }
 
 element-text { text-color: @fg; }
-element selected {
-  background-color: @selbg;
-  text-color: @selfg;
-}
+element selected { background-color: @selbg; text-color: @selfg; }
 
 message { padding: 6px; }
