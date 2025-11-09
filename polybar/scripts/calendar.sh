@@ -37,6 +37,8 @@ launch_kitty_calcurse(){
     -o remember_window_size=no \
     -o initial_window_width=720 \
     -o initial_window_height=520 \
+    -o background_opacity=1.0 \
+    -o background=#0f111a \
     -e calcurse &
   sleep 1
   bspc rule -r CalendarPopup || true
