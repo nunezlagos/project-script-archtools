@@ -1,4 +1,4 @@
-## Dunst minimal config (no rounded corners, 1px border, dark)
+## Dunst config (5px corners, 1px border, dark)
 [global]
 monitor = 0
 follow = keyboard
@@ -13,7 +13,7 @@ padding = 6
 horizontal_padding = 8
 frame_width = 1
 frame_color = #414868  # kitty black tone border
-corner_radius = 0
+corner_radius = 5
 font = JetBrains Mono 10
 line_height = 0
 markup = yes

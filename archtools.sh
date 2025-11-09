@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Salida minimalista y progreso
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=15
+TOTAL_STEPS=17
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -48,7 +48,7 @@ packages=(
   networkmanager network-manager-applet
   nm-connection-editor
   udisks2 udiskie libnotify gsimplecal flameshot pasystray
-  yazi fastfetch
+  yazi fastfetch yad calcurse papirus-icon-theme
 )
 
 install_packages(){
@@ -149,6 +149,38 @@ gtk-theme-name=Adwaita-dark
 EOF
   chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0" 2>/dev/null || true
   progress_step "GTK dark configurado"
+}
+
+# Configurar LightDM (greeter GTK) con fondo oscuro y profesional
+configure_lightdm_greeter(){
+  local etc_dir="/etc/lightdm"
+  local sys_bg="/usr/share/pixmaps/login-bg.png"
+  sudo mkdir -p "$etc_dir"
+
+  # Copiar configuración del greeter
+  if [[ -f "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.conf" ]]; then
+    sudo cp "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.conf" "$etc_dir/lightdm-gtk-greeter.conf" >/dev/null 2>&1 || warn "No se pudo copiar greeter.conf"
+  else
+    warn "Archivo de greeter no encontrado en repo"
+  fi
+
+  # Copiar CSS personalizado de acentos rojos
+  if [[ -f "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.css" ]]; then
+    sudo cp "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.css" "$etc_dir/lightdm-gtk-greeter.css" >/dev/null 2>&1 || warn "No se pudo copiar greeter.css"
+  fi
+
+  # Copiar fondo al sistema (preferir wallpaper onigirl si existe)
+  local src1="$CONFIG_DIR/wallpaper/onigirl.png"
+  local src2="$SCRIPT_DIR/wallpaper/onigirl.png"
+  if [[ -f "$src1" ]]; then
+    sudo install -Dm644 "$src1" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar fondo"
+  elif [[ -f "$src2" ]]; then
+    sudo install -Dm644 "$src2" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar fondo"
+  else
+    warn "Wallpaper onigirl.png no encontrado; mantengo fondo por defecto"
+  fi
+
+  progress_step "Greeter de LightDM configurado"
 }
 
 reinstall_firefox_clean(){
@@ -280,6 +312,11 @@ final_tips(){
   echo "Log detallado: $LOG_FILE"
 }
 
+reboot_system(){
+  progress_step "Reiniciando sistema"
+  sudo systemctl reboot >/dev/null 2>&1 || systemctl reboot >/dev/null 2>&1 || sudo reboot >/dev/null 2>&1 || reboot >/dev/null 2>&1 || true
+}
+
 main(){
   progress_init
   check_internet
@@ -293,6 +330,7 @@ main(){
   ensure_bspwm_session
   copy_configs
   configure_gtk_dark
+  configure_lightdm_greeter
   reinstall_firefox_clean
   enable_lightdm
   enable_networkmanager
@@ -305,6 +343,7 @@ main(){
     progress_step "AUR actualizado"
   fi
   final_tips
+  reboot_system
 }
 
 main "$@"

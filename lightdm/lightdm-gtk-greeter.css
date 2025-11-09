@@ -1,0 +1,69 @@
+/* LightDM GTK Greeter custom accents (dark + red) */
+
+/* Panel and clock */
+#panel {
+  background-color: rgba(26, 27, 38, 0.92); /* kitty bg */
+  border-bottom: 1px solid #f7768e; /* red accent */
+}
+#clock {
+  color: #c0caf5; /* light text */
+  font-weight: 600;
+}
+
+/* Buttons */
+button {
+  background-color: #1a1b26;
+  color: #c0caf5;
+  border: 1px solid #414868;
+  border-radius: 5px;
+  padding: 6px 10px;
+}
+button:hover,
+button:focus {
+  border-color: #f7768e;
+  box-shadow: 0 0 0 2px rgba(247, 118, 142, 0.25);
+}
+button:active {
+  background-color: #151621;
+  border-color: #f7768e;
+}
+
+/* Text entries (usuario/contraseña) */
+entry {
+  background-color: #0f111a;
+  color: #c0caf5;
+  border: 1px solid #414868;
+  border-radius: 5px;
+  padding: 6px;
+}
+entry:focus {
+  border-color: #f7768e;
+}
+
+/* Menús y selección */
+combobox box,
+menu,
+menubar {
+  background-color: rgba(26, 27, 38, 0.95);
+  color: #c0caf5;
+}
+menuitem:hover,
+menuitem:selected,
+list row:selected,
+treeview:selected {
+  background-color: rgba(247, 118, 142, 0.18);
+  color: #c0caf5;
+}
+
+/* Indicadores (sesión, layout, power) */
+#indicators {
+  color: #c0caf5;
+}
+#indicators button:hover {
+  border-color: #f7768e;
+}
+
+/* Userlist hover */
+list row:hover {
+  background-color: rgba(65, 72, 104, 0.25);
+}

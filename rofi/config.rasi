@@ -1,7 +1,7 @@
 /* Rofi minimal, clean and professional */
 configuration {
   modi: "drun,run";
-  show-icons: false;
+  show-icons: true;
   icon-theme: "Papirus";
   display-drun: "Apps";
   display-run: "Run";
@@ -21,11 +21,11 @@ configuration {
   text-color:       @fg;
   border-color:     @border;
   border:           1px;
-  border-radius:    0px;
+  border-radius:    5px;
   padding:          6px;
 }
 
-window { width: 32%; border: 1px; border-radius: 0px; }
+window { width: 32%; border: 1px; border-radius: 5px; }
 
 mainbox { padding: 8px; }
 
@@ -49,7 +49,7 @@ element-icon { size: 24px; }
 
 element-text { text-color: @fg; }
 element selected { background-color: @selbg; text-color: @selfg; }
-element { border-radius: 0px; }
+element { border-radius: 5px; }
 entry { padding: 6px; }
 
 message { padding: 6px; }
