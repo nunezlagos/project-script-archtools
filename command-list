@@ -11,7 +11,6 @@
 
 ## Lanzadores personalizados (sxhkd)
 - `super + shift + f` → Ir a escritorio 7 y enfocar navegador (Firefox)
-- `super + shift + b` → Ir a escritorio 7 y abrir Brave (Flatpak)
 
 ## BSPWM — Navegación y swap
 - `super + ←/↓/↑/→` → Foco a {west,south,north,east}
@@ -64,7 +63,6 @@
 ## Comandos de apps
 - Rofi apps: `rofi -show drun`
 - Rofi comandos: `rofi -show run`
-- Brave: `brave` (wrapper) | `flatpak run com.brave.Browser`
 - Audio: `pavucontrol`
 - Red: `nm-applet` (tray) | `nm-connection-editor`
 - Dispositivos: `udiskie --tray` | `udisksctl`

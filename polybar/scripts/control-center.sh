@@ -23,18 +23,18 @@ audio_menu(){
   esac
 }
 
-CHOICE=$(printf "Internet\nAudio\nWallpapers\nDevices\n\nSuspend\nReboot\nPoweroff\nExit" | rofi -dmenu -i -p "Control" -theme ~/.config/rofi/config.rasi)
+CHOICE=$(printf "Network\nAudio\nWallpapers\nDevices\n\nSuspend\nReboot\nPoweroff\nExit" | rofi -dmenu -i -p "Control" -theme ~/.config/rofi/config.rasi)
 
 case "${CHOICE:-}" in
-  Internet)
-    if command -v nmcli >/dev/null 2>&1; then
+  Network)
+    if command -v nm-connection-editor >/dev/null 2>&1; then
+      GTK_THEME=Adwaita:dark nm-connection-editor &
+    elif command -v nm-applet >/dev/null 2>&1; then
+      GTK_THEME=Adwaita:dark nm-applet &
+    elif command -v nmcli >/dev/null 2>&1; then
       bash ~/.config/polybar/scripts/wifi.sh &
     else
-      if command -v nm-connection-editor >/dev/null 2>&1; then
-        GTK_THEME=Adwaita:dark nm-connection-editor &
-      else
-        GTK_THEME=Adwaita:dark nm-applet &
-      fi
+      bash ~/.config/polybar/scripts/wifi.sh &
     fi
     ;;
   Audio)

@@ -46,7 +46,8 @@ packages=(
   bspwm sxhkd polybar picom dunst feh kitty
   nano rofi pavucontrol firefox
   networkmanager network-manager-applet
-  udisks2 udiskie libnotify
+  nm-connection-editor
+  udisks2 udiskie libnotify gsimplecal
   yazi fastfetch
 )
 
@@ -159,9 +160,6 @@ reinstall_firefox_clean(){
   # Desinstalar variantes
   if command -v pacman >/dev/null 2>&1; then
     run_quiet sudo pacman -Rns --noconfirm firefox firefox-esr firefox-developer-edition || true
-  fi
-  if command -v snap >/dev/null 2>&1; then
-    run_quiet sudo snap remove firefox || true
   fi
 
   # Limpiar perfiles y cachés del usuario

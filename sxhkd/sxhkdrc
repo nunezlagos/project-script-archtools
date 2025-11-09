@@ -132,9 +132,6 @@ super + alt + {Left,Down,Up,Right}
 super + shift + f
 	 bspc desktop -f ^7 && ~/.config/polybar/scripts/focus_browser.sh
 
-# Brave (Flatpak)
-super + shift + b
-    bspc desktop -f ^7 && flatpak run com.brave.Browser
 
 
 ###############
