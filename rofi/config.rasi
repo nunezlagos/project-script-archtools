@@ -1,4 +1,4 @@
-/* Rofi minimal limpio y legible */
+/* Rofi minimal, clean and professional */
 configuration {
   modi: "drun,run";
   show-icons: true;
@@ -9,28 +9,29 @@ configuration {
 }
 
 * {
-  bg:        #1e1e1e;   /* gris oscuro suave */
-  fg:        #eaeaea;   /* texto claro */
-  accent:    #FEC006;   /* acento */
-  selbg:     #2a2a2a;   /* selección sutil */
-  selfg:     #ffffff;   /* texto seleccionado */
-  border:    #3a3a3a;   /* borde discreto */
+  bg:        #1a1b26;   /* kitty background */
+  fg:        #c0caf5;   /* kitty white */
+  accent:    #e0af68;   /* kitty yellow */
+  selbg:     #28344a;   /* kitty selection background */
+  selfg:     #c0caf5;   /* selected text */
+  border:    #414868;   /* kitty black tone */
 
   background-color: @bg;
   text-color:       @fg;
   border-color:     @border;
-  border:           2px;
+  border:           1px;
+  border-radius:    0px;
   padding:          6px;
 }
 
-window { width: 32%; border: 1px; }
+window { width: 32%; border: 1px; border-radius: 0px; }
 
 mainbox { padding: 8px; }
 
 inputbar {
   children:   [ prompt, entry ];
   padding:    6px;
-  border:     0 0 2px 0;
+  border:     0 0 1px 0;
   border-color: @accent;
 }
 
@@ -47,7 +48,7 @@ element-icon { size: 24px; }
 
 element-text { text-color: @fg; }
 element selected { background-color: @selbg; text-color: @selfg; }
-element { border-radius: 3px; }
+element { border-radius: 0px; }
 entry { padding: 6px; }
 
 message { padding: 6px; }

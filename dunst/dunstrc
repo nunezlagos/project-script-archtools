@@ -1,0 +1,52 @@
+## Dunst minimal config (no rounded corners, 1px border, dark)
+[global]
+monitor = 0
+follow = keyboard
+geometry = "300x50-12+60"
+indicate_hidden = yes
+shrink = yes
+transparency = 0
+separator_height = 0
+padding = 6
+horizontal_padding = 8
+frame_width = 1
+frame_color = #414868  # kitty black tone border
+corner_radius = 0
+font = JetBrains Mono 10
+line_height = 0
+markup = yes
+format = "%s\n%b"
+alignment = left
+hide_duplicates_count = 1
+show_age_threshold = 60
+idle_threshold = 120
+word_wrap = yes
+ellipsize = middle
+icon_position = left
+max_icon_size = 32
+browser = xdg-open
+title = Dunst
+class = Dunst
+
+# Colors per urgency (English names)
+[urgency_low]
+background = #1a1b26   # kitty background (dark)
+foreground = #c0caf5   # kitty white
+frame_color = #73daca  # kitty green
+timeout = 3
+
+[urgency_normal]
+background = #1a1b26
+foreground = #c0caf5
+frame_color = #e0af68  # kitty yellow
+timeout = 6
+
+[urgency_critical]
+background = #1a1b26
+foreground = #c0caf5
+frame_color = #f7768e  # kitty red
+timeout = 0
+priority = 100
+
+# Do not show borders for list separators
+separator_color = frame

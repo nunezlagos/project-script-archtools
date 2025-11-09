@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Salida minimalista y progreso
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=12
+TOTAL_STEPS=13
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -131,6 +131,23 @@ copy_configs(){
   # Asegurar permisos de ejecución para scripts usados por Polybar
   chmod +x "$CONFIG_DIR/polybar/scripts"/*.sh 2>/dev/null || true
   progress_step "Configuraciones aplicadas (limpio)"
+}
+
+configure_gtk_dark(){
+  # Force dark theme for GTK apps (GTK3/GTK4)
+  mkdir -p "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0"
+  cat >"$CONFIG_DIR/gtk-3.0/settings.ini" <<'EOF'
+[Settings]
+gtk-application-prefer-dark-theme=1
+gtk-theme-name=Adwaita-dark
+EOF
+  cat >"$CONFIG_DIR/gtk-4.0/settings.ini" <<'EOF'
+[Settings]
+gtk-application-prefer-dark-theme=1
+gtk-theme-name=Adwaita-dark
+EOF
+  chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0" 2>/dev/null || true
+  progress_step "GTK dark configurado"
 }
 
 reinstall_firefox_clean(){
@@ -277,6 +294,7 @@ main(){
   ensure_dirs; progress_step "Directorios preparados"
   ensure_bspwm_session
   copy_configs
+  configure_gtk_dark
   reinstall_firefox_clean
   enable_lightdm
   enable_networkmanager
