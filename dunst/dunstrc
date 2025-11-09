@@ -2,7 +2,9 @@
 [global]
 monitor = 0
 follow = keyboard
-geometry = "300x50-12+60"
+origin = top-right
+offset = 12x60
+geometry = "340x80-20+60"
 indicate_hidden = yes
 shrink = yes
 transparency = 0
@@ -22,8 +24,8 @@ show_age_threshold = 60
 idle_threshold = 120
 word_wrap = yes
 ellipsize = middle
-icon_position = left
-max_icon_size = 32
+icon_position = off
+max_icon_size = 0
 browser = xdg-open
 title = Dunst
 class = Dunst
