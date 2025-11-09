@@ -47,7 +47,7 @@ packages=(
   nano rofi pavucontrol firefox
   networkmanager network-manager-applet
   nm-connection-editor
-  udisks2 udiskie libnotify gsimplecal
+  udisks2 udiskie libnotify gsimplecal flameshot pasystray
   yazi fastfetch
 )
 

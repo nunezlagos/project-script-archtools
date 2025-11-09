@@ -49,4 +49,14 @@ xsetroot -cursor_name left_ptr &
 # DUNST (notificaciones)
 dunst &
 
+# Tray apps (se inician siempre)
+# NetworkManager applet
+nm-applet &
+# Udiskie (automount) en bandeja
+udiskie --tray &
+# Flameshot (capturas con icono de bandeja)
+flameshot &
+# Pasystray (icono de audio)
+pasystray &
+
 
