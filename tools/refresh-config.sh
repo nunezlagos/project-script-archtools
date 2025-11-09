@@ -40,7 +40,9 @@ copy_component(){
     sxhkd)
       copy_file_if_exists "$ROOT_DIR/sxhkd/sxhkdrc" "$CONFIG_DIR/sxhkd/sxhkdrc";;
     polybar)
-      copy_file_if_exists "$ROOT_DIR/polybar/current.ini" "$CONFIG_DIR/polybar/config.ini"
+      copy_file_if_exists "$ROOT_DIR/polybar/current.ini" "$CONFIG_DIR/polybar/current.ini"
+      copy_file_if_exists "$ROOT_DIR/polybar/workspace.ini" "$CONFIG_DIR/polybar/workspace.ini"
+      copy_file_if_exists "$ROOT_DIR/polybar/colors.ini" "$CONFIG_DIR/polybar/colors.ini"
       copy_file_if_exists "$ROOT_DIR/polybar/launch.sh" "$CONFIG_DIR/polybar/launch.sh" && chmod +x "$CONFIG_DIR/polybar/launch.sh"
       copy_dir_if_exists "$ROOT_DIR/polybar/scripts" "$CONFIG_DIR/polybar/scripts";;
     picom)

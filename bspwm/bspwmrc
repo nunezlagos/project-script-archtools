@@ -25,7 +25,7 @@ bspc rule -a Screenkey manage=off
 feh --bg-fill ~/.config/wallpaper/onigirl.png
 #feh --bg-fill ~/.config/wallpaper/wallpaper_2.jpg
 # POLYBAR
-~/.config/polybar/launch.sh
+~/.config/polybar/launch.sh &
 
 # CUSTOM
 bspc config focus_follows_pointer true
@@ -35,5 +35,8 @@ picom &
 bspc config border_width 0
 
 xsetroot -cursor_name left_ptr &
+
+# DUNST (notificaciones)
+dunst &
 
 

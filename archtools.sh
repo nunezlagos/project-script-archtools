@@ -30,6 +30,7 @@ packages=(
   nano flatpak rofi pavucontrol
   networkmanager network-manager-applet
   udisks2 udiskie
+  yazi fastfetch
 )
 
 install_packages(){
@@ -73,6 +74,36 @@ ensure_dirs(){
   done
 }
 
+ensure_bspwm_session(){
+  # .xinitrc / .xsession para startx/DMs que lo respetan
+  local xinit="$HOME_DIR/.xinitrc"
+  local xsession="$HOME_DIR/.xsession"
+  for f in "$xinit" "$xsession"; do
+    if [[ ! -f "$f" ]]; then
+      cat > "$f" <<'EOF'
+#!/bin/sh
+exec bspwm
+EOF
+      chown "$USER_NAME":"$USER_NAME" "$f" 2>/dev/null || true
+      chmod +x "$f"
+      ok "Creado: $f"
+    fi
+  done
+  # Entrada de sesión para LightDM
+  local desktop="/usr/share/xsessions/bspwm.desktop"
+  if [[ ! -f "$desktop" ]]; then
+    sudo tee "$desktop" >/dev/null <<'EOF'
+[Desktop Entry]
+Name=BSPWM
+Comment=Binary space partitioning window manager
+Exec=bspwm
+TryExec=bspwm
+Type=Application
+EOF
+    ok "Sesión BSPWM registrada en LightDM"
+  fi
+}
+
 backup_if_exists(){
   local path="$1"; [ -e "$path" ] || return 0
   mkdir -p "$BACKUP_DIR"; cp -r "$path" "$BACKUP_DIR/" 2>/dev/null || true
@@ -84,7 +115,9 @@ copy_configs(){
   declare -A MAP=(
     ["$SCRIPT_DIR/bspwm/bspwmrc"]="$CONFIG_DIR/bspwm/bspwmrc"
     ["$SCRIPT_DIR/sxhkd/sxhkdrc"]="$CONFIG_DIR/sxhkd/sxhkdrc"
-    ["$SCRIPT_DIR/polybar/current.ini"]="$CONFIG_DIR/polybar/config.ini"
+    ["$SCRIPT_DIR/polybar/current.ini"]="$CONFIG_DIR/polybar/current.ini"
+    ["$SCRIPT_DIR/polybar/workspace.ini"]="$CONFIG_DIR/polybar/workspace.ini"
+    ["$SCRIPT_DIR/polybar/colors.ini"]="$CONFIG_DIR/polybar/colors.ini"
     ["$SCRIPT_DIR/polybar/launch.sh"]="$CONFIG_DIR/polybar/launch.sh"
     ["$SCRIPT_DIR/polybar/scripts"]="$CONFIG_DIR/polybar/scripts"
     ["$SCRIPT_DIR/picom/picom.conf"]="$CONFIG_DIR/picom/picom.conf"
@@ -105,6 +138,31 @@ copy_configs(){
   done
   chmod +x "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/polybar/launch.sh" 2>/dev/null || true
   ok "Configuraciones aplicadas"
+}
+
+install_yay(){
+  if command -v yay >/dev/null 2>&1; then
+    ok "yay ya está instalado"
+    return 0
+  fi
+  ok "Instalando yay (AUR helper)"
+  sudo pacman -S --needed --noconfirm git base-devel || { err "No se pudo instalar git/base-devel"; return 1; }
+  local tmpdir="/tmp/yay_install"
+  rm -rf "$tmpdir" && mkdir -p "$tmpdir"
+  chown "$USER_NAME":"$USER_NAME" "$tmpdir" 2>/dev/null || true
+  sudo -u "$USER_NAME" bash -c "cd '$tmpdir' && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm" || { err "Fallo instalando yay"; return 1; }
+  rm -rf "$tmpdir" 2>/dev/null || true
+  ok "yay instalado"
+}
+
+disable_conflicting_services(){
+  for svc in gdm sddm; do
+    if systemctl list-unit-files | grep -q "^${svc}.service"; then
+      sudo systemctl disable "$svc" >/dev/null 2>&1 || true
+      sudo systemctl stop "$svc" >/dev/null 2>&1 || true
+      warn "Servicio potencialmente conflictivo deshabilitado: $svc"
+    fi
+  done
 }
 
 enable_lightdm(){
@@ -183,15 +241,23 @@ final_tips(){
 
 main(){
   check_internet
+  disable_conflicting_services
+  # Actualización previa completa
+  sudo pacman -Syu --noconfirm || warn "Actualización previa con pacman falló"
   install_packages
   install_brave_flatpak
   create_brave_wrapper
+  install_yay || warn "yay no se pudo instalar"
   ensure_dirs
+  ensure_bspwm_session
   copy_configs
   enable_lightdm
   enable_networkmanager
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
   write_command_list
+  # Actualización final
+  sudo pacman -Syu --noconfirm || warn "Actualización final con pacman falló"
+  command -v yay >/dev/null 2>&1 && yay -Syu --noconfirm || true
   final_tips
 }
 
