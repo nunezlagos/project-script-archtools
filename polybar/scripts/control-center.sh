@@ -56,7 +56,7 @@ case "${CHOICE:-}" in
     audio_menu
     ;;
   *Wallpapers*)
-    ~/.config/polybar/scripts/wallpaper.sh &
+    ~/.config/polybar/scripts/wallpaper_tui.sh &
     ;;
   *Devices*)
     bash ~/.config/polybar/scripts/devices.sh &
