@@ -128,6 +128,8 @@ copy_configs(){
     fi
   done
   chmod +x "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/polybar/launch.sh" 2>/dev/null || true
+  # Asegurar permisos de ejecución para scripts usados por Polybar
+  chmod +x "$CONFIG_DIR/polybar/scripts"/*.sh 2>/dev/null || true
   progress_step "Configuraciones aplicadas (limpio)"
 }
 

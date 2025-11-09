@@ -1,4 +1,4 @@
-/* Rofi minimal config respetando colores de Kitty/Polybar */
+/* Rofi minimal limpio y legible */
 configuration {
   modi: "drun,run";
   show-icons: true;
@@ -9,12 +9,12 @@ configuration {
 }
 
 * {
-  bg:        #000000;   /* polybar fg inverse minimal */
-  fg:        #FFFFFF;   /* polybar white */
-  accent:    #FEC006;   /* polybar accent/yellow */
-  selbg:     #1b1b1b;   /* minimal dark */
-  selfg:     #FEC006;   /* accent for selection text */
-  border:    #FEC006;   /* accent border */
+  bg:        #1e1e1e;   /* gris oscuro suave */
+  fg:        #eaeaea;   /* texto claro */
+  accent:    #FEC006;   /* acento */
+  selbg:     #2a2a2a;   /* selección sutil */
+  selfg:     #ffffff;   /* texto seleccionado */
+  border:    #3a3a3a;   /* borde discreto */
 
   background-color: @bg;
   text-color:       @fg;
@@ -23,7 +23,7 @@ configuration {
   padding:          6px;
 }
 
-window { width: 34%; border: 2px; }
+window { width: 32%; border: 1px; }
 
 mainbox { padding: 8px; }
 
@@ -40,12 +40,14 @@ entry {
   placeholder: "Buscar…";
 }
 
-listview { lines: 9; fixed-height: true; scrollbar: false; }
+listview { lines: 8; fixed-height: true; scrollbar: false; }
 
 element { padding: 6px; }
 element-icon { size: 24px; }
 
 element-text { text-color: @fg; }
 element selected { background-color: @selbg; text-color: @selfg; }
+element { border-radius: 3px; }
+entry { padding: 6px; }
 
 message { padding: 6px; }
