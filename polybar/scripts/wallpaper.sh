@@ -28,13 +28,20 @@ apply_wallpaper(){
   fi
 }
 
-# Construye lista con miniaturas (iconos) en Rofi
+## Flotar y centrar la ventana de Rofi temporalmente
+bspc rule -a Rofi -o state=floating center=true
+
+# Construye lista con glifos en lugar de icon markup
 CHOICE=$(printf "%s\n" "${IMAGES[@]}" | while read -r img; do 
-  bn="${img##*/}"; printf "%s\0icon\x1f%s\n" "$bn" "$img"; 
-done | rofi -dmenu -i -p "Wallpaper" -show-icons -theme ~/.config/rofi/config.rasi)
+  bn="${img##*/}"; printf "  %s\n" "$bn"; 
+done | rofi -dmenu -i -p "Wallpapers" -theme ~/.config/rofi/config.rasi)
+
+bspc rule -r Rofi || true
 
 if [ -n "${CHOICE:-}" ]; then
-  IMG="$WALL_DIR/$CHOICE"
+  # Elimina el prefijo del glifo "  " para obtener el nombre real
+  bn="${CHOICE#  }"
+  IMG="$WALL_DIR/$bn"
   apply_wallpaper "$IMG"
-  notify-send "Wallpaper aplicado" "$CHOICE" || true
+  notify-send "Wallpaper aplicado" "$bn" || true
 fi

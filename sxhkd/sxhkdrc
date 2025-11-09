@@ -8,7 +8,7 @@ super + Return
 
 # program launcher
 super + d
-	rofi -show run
+	rofi -show drun -theme ~/.config/rofi/config.rasi -show-icons
 
 # make sxhkd reload its configuration files:
 super + Escape

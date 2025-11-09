@@ -24,10 +24,18 @@ bspc rule -a Pavucontrol state=floating center=on
 bspc rule -a pavucontrol state=floating center=on
 bspc rule -a nm-connection-editor state=floating center=on
 bspc rule -a Nm-connection-editor state=floating center=on
+bspc rule -a Blueberry state=floating center=on
+bspc rule -a blueberry state=floating center=on
+bspc rule -a Nitrogen state=floating center=on
+bspc rule -a nitrogen state=floating center=on
 
 # Audio graph tools
 bspc rule -a helvum state=floating center=on
 bspc rule -a qpwgraph state=floating center=on
+
+# Archivos/Edición desde iconos inferiores
+bspc rule -a Thunar state=floating center=on
+bspc rule -a Geany state=floating center=on
 
 # RESOLUTION
 
@@ -52,11 +60,24 @@ dunst &
 # Tray apps (se inician siempre)
 # NetworkManager applet
 nm-applet &
-# Udiskie (automount) en bandeja
-udiskie --tray &
-# Flameshot (capturas con icono de bandeja)
-flameshot &
-# Pasystray (icono de audio)
-pasystray &
+# Udiskie (automount) en bandeja — DESACTIVADO
+# udiskie --tray &
+# Flameshot (capturas con icono de bandeja) — DESACTIVADO
+# flameshot &
+# Pasystray (icono de audio) — DESACTIVADO
+# pasystray &
+
+# Ventanas flotantes para apps de chat/comunicación
+bspc rule -a Slack state=floating center=on
+bspc rule -a slack state=floating center=on
+bspc rule -a discord state=floating center=on
+bspc rule -a Discord state=floating center=on
+bspc rule -a TelegramDesktop state=floating center=on
+bspc rule -a zoom state=floating center=on
+bspc rule -a Signal state=floating center=on
+
+# Firefox: ventanas privadas flotantes (en inglés/español)
+bspc rule -a firefox -o name~='Private Browsing' state=floating center=on
+bspc rule -a firefox -o name~='Navegación privada' state=floating center=on
 
 

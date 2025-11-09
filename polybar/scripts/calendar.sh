@@ -40,7 +40,7 @@ launch_kitty_calcurse(){
     -o background_opacity=1.0 \
     -o background=#0f111a \
     -o foreground=#c0caf5 \
-    -e bash -lc 'env TERM=xterm-256color calcurse || cal' &
+    -e bash -lc 'env TERM=xterm calcurse || cal' &
   sleep 1
   bspc rule -r CalendarPopup || true
 }
@@ -50,7 +50,7 @@ launch_rofi_cal(){
   printf "%s\n" "$cal_out" | rofi -dmenu -p "Calendar" -theme ~/.config/rofi/config.rasi >/dev/null 2>&1 || true
 }
 
-if command -v calcurse >/dev/null 2>&1 && command -v kitty >/dev/null 2>&1; then
+if [[ -n "${KITTY_CAL:-}" ]] && command -v calcurse >/dev/null 2>&1 && command -v kitty >/dev/null 2>&1; then
   launch_kitty_calcurse
 elif command -v yad >/dev/null 2>&1; then
   launch_yad
@@ -59,5 +59,9 @@ elif command -v gsimplecal >/dev/null 2>&1; then
 elif command -v zenity >/dev/null 2>&1; then
   launch_zenity
 else
-  launch_rofi_cal
+  if command -v calcurse >/dev/null 2>&1 && command -v kitty >/dev/null 2>&1; then
+    launch_kitty_calcurse
+  else
+    launch_rofi_cal
+  fi
 fi

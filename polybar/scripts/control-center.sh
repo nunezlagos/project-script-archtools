@@ -12,68 +12,68 @@ confirm(){
 
 audio_menu(){
   local items
-  items="Pavucontrol\x00icon\x1faudio-card"
+  items="  Pavucontrol"
   if command -v helvum >/dev/null 2>&1; then
-    items="$items\nHelvum\x00icon\x1faudio-card"
+    items="$items\n  Helvum"
   fi
   if command -v qpwgraph >/dev/null 2>&1; then
-    items="$items\nQpwgraph\x00icon\x1faudio-card"
+    items="$items\n  Qpwgraph"
   fi
-  local pick=$(printf "%s\n" "$items" | rofi -dmenu -i -p "Audio" -show-icons -theme ~/.config/rofi/config.rasi)
+  local pick=$(printf "%s\n" "$items" | rofi -dmenu -i -p "Audio" -theme ~/.config/rofi/config.rasi)
   case "$pick" in
-    Pavucontrol) GTK_THEME=Adwaita:dark pavucontrol & ;;
-    Helvum) GTK_THEME=Adwaita:dark helvum & ;;
-    Qpwgraph) GTK_THEME=Adwaita:dark qpwgraph & ;;
+    *Pavucontrol*) GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh Pavucontrol pavucontrol ;;
+    *Helvum*) GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh helvum helvum ;;
+    *Qpwgraph*) GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh qpwgraph qpwgraph ;;
     *) ;; 
   esac
 }
 
-CHOICE=$(cat <<'EOF' | rofi -dmenu -i -p "Control" -show-icons -theme ~/.config/rofi/config.rasi
-Network\x00icon\x1fnetwork-wireless
-Audio\x00icon\x1faudio-volume-high
-Wallpapers\x00icon\x1fimage-x-generic
-Devices\x00icon\x1fcomputer
-Suspend\x00icon\x1fsystem-suspend
-Reboot\x00icon\x1fsystem-reboot
-Poweroff\x00icon\x1fsystem-shutdown
-Exit\x00icon\x1fsystem-log-out
+CHOICE=$(cat <<'EOF' | rofi -dmenu -i -p "Control" -theme ~/.config/rofi/config.rasi
+  Network
+  Audio
+  Wallpapers
+  Devices
+  Suspend
+  Reboot
+  Poweroff
+  Exit
 EOF
 )
 
 case "${CHOICE:-}" in
-  Network)
+  *Network*)
     if command -v nm-connection-editor >/dev/null 2>&1; then
-      GTK_THEME=Adwaita:dark nm-connection-editor &
+      GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh nm-connection-editor nm-connection-editor
     elif command -v nm-applet >/dev/null 2>&1; then
-      GTK_THEME=Adwaita:dark nm-applet &
+      GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh nm-applet nm-applet
     elif command -v nmcli >/dev/null 2>&1; then
       bash ~/.config/polybar/scripts/wifi.sh &
     else
       bash ~/.config/polybar/scripts/wifi.sh &
     fi
     ;;
-  Audio)
+  *Audio*)
     audio_menu
     ;;
-  Wallpapers)
+  *Wallpapers*)
     if command -v nitrogen >/dev/null 2>&1; then
-      GTK_THEME=Adwaita:dark nitrogen &
+      GTK_THEME=Adwaita:dark ~/.config/polybar/scripts/open_float.sh Nitrogen nitrogen
     else
       ~/.config/polybar/scripts/wallpaper.sh &
     fi
     ;;
-  Devices)
+  *Devices*)
     bash ~/.config/polybar/scripts/devices.sh &
     ;;
-  Suspend)
+  *Suspend*)
     if confirm "Suspend"; then systemctl suspend & fi
     ;;
-  Reboot)
+  *Reboot*)
     if confirm "Reboot"; then systemctl reboot & fi
     ;;
-  Poweroff)
+  *Poweroff*)
     if confirm "Poweroff"; then systemctl poweroff & fi
     ;;
-  Exit) ;;
+  *Exit*) ;;
   *) ;;
 esac
