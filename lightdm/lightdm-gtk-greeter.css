@@ -101,3 +101,40 @@ label { color: #c0caf5; }
   border-color: #f7768e;
   box-shadow: 0 0 0 2px rgba(247, 118, 142, 0.18);
 }
+
+/* Layout: centrar caja de login con ancho fijo y padding cómodo */
+#content {
+  max-width: 520px;
+  margin: 6% auto;
+  padding: 16px 20px;
+}
+
+/* Mejorar contraste de labels y títulos dentro del content */
+#content label {
+  font-size: 1.05em;
+}
+
+/* Inputs y botones más grandes para accesibilidad */
+#authprompt entry,
+#content button {
+  font-size: 1.05em;
+}
+
+/* Realzar el botón de iniciar sesión */
+#content button.default,
+button.default {
+  border-color: #f7768e;
+}
+
+/* Lista de usuarios: mayor separación y hover más notorio */
+#userlist row {
+  padding: 6px 8px;
+}
+#userlist row:selected, #userlist row:hover {
+  background-color: rgba(247, 118, 142, 0.18);
+}
+
+/* Indicadores superiores: separación y estilo consistente */
+#indicators {
+  padding: 4px 8px;
+}
