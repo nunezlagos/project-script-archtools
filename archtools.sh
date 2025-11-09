@@ -14,6 +14,23 @@ ok(){ echo -e "${GREEN}[✓]${NC} $1"; }
 warn(){ echo -e "${YELLOW}[!]${NC} $1"; }
 err(){ echo -e "${RED}[✗]${NC} $1"; }
 
+# Salida minimalista y progreso
+QUIET_MODE=1
+LOG_FILE="/tmp/archtools-install.log"
+TOTAL_STEPS=12
+CURRENT_STEP=0
+progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
+progress_step(){
+  CURRENT_STEP=$((CURRENT_STEP + 1))
+  local pct=$((CURRENT_STEP * 100 / TOTAL_STEPS))
+  local blocks=$((pct / 10))
+  local bar=""; local i=0
+  while [ $i -lt $blocks ]; do bar="${bar}="; i=$((i+1)); done
+  while [ $i -lt 10 ]; do bar="${bar}-"; i=$((i+1)); done
+  printf "[%s] %3d%% %s\n" "$bar" "$pct" "$1"
+}
+run_quiet(){ "$@" >>"$LOG_FILE" 2>&1; }
+
 check_internet(){
   if ping -c 1 archlinux.org &>/dev/null; then
     ok "Internet OK"
@@ -27,45 +44,18 @@ packages=(
   xorg-server xorg-xinit
   lightdm lightdm-gtk-greeter
   bspwm sxhkd polybar picom dunst feh kitty
-  nano flatpak rofi pavucontrol
+  nano rofi pavucontrol firefox
   networkmanager network-manager-applet
   udisks2 udiskie
   yazi fastfetch
 )
 
 install_packages(){
-  sudo pacman -Syu --noconfirm || { err "Fallo al actualizar paquetes"; exit 1; }
-  sudo pacman -S --needed --noconfirm "${packages[@]}" || warn "Algún paquete no se instaló"
-  ok "Paquetes instalados"
+  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || { err "Fallo al actualizar paquetes"; exit 1; }
+  run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet "${packages[@]}" || warn "Algún paquete no se instaló"
+  progress_step "Paquetes instalados"
 }
 
-install_brave_flatpak(){
-  if ! command -v flatpak >/dev/null 2>&1; then
-    warn "Flatpak no está disponible, saltando Brave"
-    return 0
-  fi
-  flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || true
-  if flatpak install -y flathub com.brave.Browser >/dev/null 2>&1; then
-    ok "Brave instalado (Flatpak)"
-  else
-    warn "No se pudo instalar Brave via Flatpak"
-  fi
-}
-
-create_brave_wrapper(){
-  mkdir -p "$HOME_DIR/.local/bin"
-  local wrapper_path="$HOME_DIR/.local/bin/brave"
-  cat > "$wrapper_path" <<'EOF'
-#!/bin/bash
-if command -v flatpak >/dev/null 2>&1; then
-  exec flatpak run com.brave.Browser "$@"
-else
-  exec brave "$@"
-fi
-EOF
-  chmod +x "$wrapper_path"
-  ok "Wrapper creado: $wrapper_path"
-}
 
 ensure_dirs(){
   mkdir -p "$CONFIG_DIR" && ok "Directorio base: $CONFIG_DIR"
@@ -79,16 +69,16 @@ ensure_bspwm_session(){
   local xinit="$HOME_DIR/.xinitrc"
   local xsession="$HOME_DIR/.xsession"
   for f in "$xinit" "$xsession"; do
-    if [[ ! -f "$f" ]]; then
-      cat > "$f" <<'EOF'
+    backup_if_exists "$f"
+    cat > "$f" <<'EOF'
 #!/bin/sh
 exec bspwm
 EOF
-      chown "$USER_NAME":"$USER_NAME" "$f" 2>/dev/null || true
-      chmod +x "$f"
-      ok "Creado: $f"
-    fi
+    chown "$USER_NAME":"$USER_NAME" "$f" 2>/dev/null || true
+    chmod +x "$f"
+    : # silencioso
   done
+  progress_step "Sesión BSPWM configurada"
   # Entrada de sesión para LightDM
   local desktop="/usr/share/xsessions/bspwm.desktop"
   if [[ ! -f "$desktop" ]]; then
@@ -130,6 +120,7 @@ copy_configs(){
   for src in "${!MAP[@]}"; do
     dest="${MAP[$src]}"
     backup_if_exists "$dest"
+    rm -rf "$dest" 2>/dev/null || true
     if [ -d "$src" ]; then
       mkdir -p "$dest"; cp -r "$src/"* "$dest/" 2>/dev/null || true
     else
@@ -137,22 +128,63 @@ copy_configs(){
     fi
   done
   chmod +x "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/polybar/launch.sh" 2>/dev/null || true
-  ok "Configuraciones aplicadas"
+  progress_step "Configuraciones aplicadas (limpio)"
+}
+
+reinstall_firefox_clean(){
+  : # encabezado silencioso
+  # Cerrar proceso si está corriendo
+  run_quiet pkill -x firefox || true
+  sleep 1
+
+  # Desinstalar variantes
+  if command -v pacman >/dev/null 2>&1; then
+    run_quiet sudo pacman -Rns --noconfirm firefox firefox-esr firefox-developer-edition || true
+  fi
+  if command -v snap >/dev/null 2>&1; then
+    run_quiet sudo snap remove firefox || true
+  fi
+
+  # Limpiar perfiles y cachés del usuario
+  run_quiet rm -rf \
+    "$HOME_DIR/.mozilla" \
+    "$HOME_DIR/.cache/mozilla" \
+    "$HOME_DIR/.config/mozilla" 2>/dev/null || true
+  # Configuración del sistema
+  run_quiet sudo rm -rf /etc/firefox || true
+
+  # Quitar dependencias huérfanas (Arch)
+  if command -v pacman >/dev/null 2>&1; then
+    orphans=$(pacman -Qtdq 2>/dev/null || true)
+    if [[ -n "${orphans:-}" ]]; then
+      run_quiet sudo pacman -Rns --noconfirm $orphans || true
+    fi
+  fi
+
+  # Reinstalar Firefox estable vía pacman
+  if command -v pacman >/dev/null 2>&1; then
+    run_quiet sudo pacman -S --noconfirm --noprogressbar --quiet firefox || {
+      warn "No se pudo reinstalar Firefox con pacman"
+      return 0
+    }
+    progress_step "Firefox reinstalado"
+  else
+    warn "Gestor pacman no disponible; omito reinstalación de Firefox"
+  fi
 }
 
 install_yay(){
   if command -v yay >/dev/null 2>&1; then
-    ok "yay ya está instalado"
+    progress_step "yay ya instalado"
     return 0
   fi
-  ok "Instalando yay (AUR helper)"
-  sudo pacman -S --needed --noconfirm git base-devel || { err "No se pudo instalar git/base-devel"; return 1; }
+  run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet git base-devel || { err "No se pudo instalar git/base-devel"; return 1; }
   local tmpdir="/tmp/yay_install"
-  rm -rf "$tmpdir" && mkdir -p "$tmpdir"
+  run_quiet rm -rf "$tmpdir" && mkdir -p "$tmpdir"
   chown "$USER_NAME":"$USER_NAME" "$tmpdir" 2>/dev/null || true
-  sudo -u "$USER_NAME" bash -c "cd '$tmpdir' && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm" || { err "Fallo instalando yay"; return 1; }
-  rm -rf "$tmpdir" 2>/dev/null || true
-  ok "yay instalado"
+  sudo -u "$USER_NAME" bash -c "cd '$tmpdir' && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm" >>"$LOG_FILE" 2>&1 || { err "Fallo instalando yay"; return 1; }
+  run_quiet rm -rf "$tmpdir" || true
+  progress_step "yay instalado"
 }
 
 disable_conflicting_services(){
@@ -167,15 +199,14 @@ disable_conflicting_services(){
 
 enable_lightdm(){
   sudo systemctl enable lightdm >/dev/null 2>&1 || warn "No se pudo habilitar lightdm"
-  sudo systemctl restart lightdm >/dev/null 2>&1 || true
-  ok "LightDM habilitado"
+  progress_step "LightDM habilitado"
 }
 
 enable_networkmanager(){
   if systemctl list-unit-files | grep -q '^NetworkManager.service'; then
     sudo systemctl enable NetworkManager >/dev/null 2>&1 || warn "No se pudo habilitar NetworkManager"
     sudo systemctl start NetworkManager >/dev/null 2>&1 || true
-    ok "NetworkManager habilitado"
+    progress_step "NetworkManager habilitado"
   else
     warn "NetworkManager no disponible (paquete no instalado?)"
   fi
@@ -183,8 +214,8 @@ enable_networkmanager(){
 
 write_command_list(){
   if [ -f "$SCRIPT_DIR/command-list" ]; then
-    sudo cp "$SCRIPT_DIR/command-list" /command-list && ok "Archivo de comandos: /command-list"
-    cp "$SCRIPT_DIR/command-list" "$HOME_DIR/command-list" && ok "Copia en home: $HOME_DIR/command-list"
+    sudo cp "$SCRIPT_DIR/command-list" /command-list >/dev/null 2>&1
+    cp "$SCRIPT_DIR/command-list" "$HOME_DIR/command-list" >/dev/null 2>&1
   else
     sudo tee /command-list >/dev/null <<'EOF'
 # Command List (resumen para Kitty)
@@ -192,7 +223,7 @@ write_command_list(){
 ## Lanzadores
 - rofi: `rofi -show drun` (apps) | `rofi -show run` (comandos)
 - terminal: `kitty`
-- navegador: `brave` (wrapper) | `flatpak run com.brave.Browser`
+- navegador: `firefox`
 
 ## Gestión del sistema
 - audio: `pavucontrol`
@@ -222,42 +253,39 @@ write_command_list(){
 - activar red: `sudo systemctl enable NetworkManager && sudo systemctl start NetworkManager`
 
 EOF
-    ok "Archivo de comandos: /command-list"
     cp /command-list "$HOME_DIR/command-list" 2>/dev/null || true
   fi
+  progress_step "Command list escrita"
 }
 
 final_tips(){
-  echo ""
-  ok "Instalación lista"
-  echo "- Editor por defecto: nano"
-  echo "- Navegador: Brave (Flatpak)"
-  echo "- Refrescar configs: tools/refresh-config.sh <componente|all>"
-  echo "  Componentes: bspwm sxhkd polybar picom dunst kitty rofi wallpaper"
-  echo "- Nota: si Brave no abre con 'brave', usar: flatpak run com.brave.Browser"
-  echo "- Wrapper: ~/.local/bin/brave (asegura PATH incluye ~/.local/bin)"
-  echo "- Comandos: ver /command-list (bonito para Kitty)"
+  progress_step "Instalación completa"
+  echo "Log detallado: $LOG_FILE"
 }
 
 main(){
+  progress_init
   check_internet
+  progress_step "Internet OK"
   disable_conflicting_services
-  # Actualización previa completa
-  sudo pacman -Syu --noconfirm || warn "Actualización previa con pacman falló"
+  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Actualización previa con pacman falló"
+  progress_step "Sistema actualizado"
   install_packages
-  install_brave_flatpak
-  create_brave_wrapper
   install_yay || warn "yay no se pudo instalar"
-  ensure_dirs
+  ensure_dirs; progress_step "Directorios preparados"
   ensure_bspwm_session
   copy_configs
+  reinstall_firefox_clean
   enable_lightdm
   enable_networkmanager
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
+  progress_step "Permisos configurados"
   write_command_list
-  # Actualización final
-  sudo pacman -Syu --noconfirm || warn "Actualización final con pacman falló"
-  command -v yay >/dev/null 2>&1 && yay -Syu --noconfirm || true
+  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Actualización final con pacman falló"
+  if command -v yay >/dev/null 2>&1; then
+    yay -Syu --noconfirm --cleanafter --noredownload >>"$LOG_FILE" 2>&1 || true
+    progress_step "AUR actualizado"
+  fi
   final_tips
 }
 
