@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Salida minimalista y progreso
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=20
+TOTAL_STEPS=22
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -83,11 +83,27 @@ ensure_bspwm_session(){
   # .xinitrc / .xsession para startx/DMs que lo respetan
   local xinit="$HOME_DIR/.xinitrc"
   local xsession="$HOME_DIR/.xsession"
+  local wrapper="/usr/local/bin/start-bspwm-session"
+  # Wrapper con log para atrapar errores de arranque sin agregar dependencias externas
+  if [[ ! -f "$wrapper" ]]; then
+    sudo tee "$wrapper" >/dev/null <<'EOF'
+#!/bin/sh
+# start-bspwm-session: env mínimo + log de inicio para BSPWM
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+mkdir -p "$HOME/.cache"
+LOGFILE="$HOME/.cache/bspwm-session.log"
+echo "[start] $(date) - launching bspwm" >>"$LOGFILE"
+echo "PATH=$PATH" >>"$LOGFILE"
+echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >>"$LOGFILE"
+exec /usr/bin/bspwm >>"$LOGFILE" 2>&1
+EOF
+    sudo chmod +x "$wrapper"
+  fi
   for f in "$xinit" "$xsession"; do
     backup_if_exists "$f"
     cat > "$f" <<'EOF'
 #!/bin/sh
-exec /usr/bin/bspwm
+exec /usr/local/bin/start-bspwm-session
 EOF
     chown "$USER_NAME":"$USER_NAME" "$f" 2>/dev/null || true
     chmod +x "$f"
@@ -101,8 +117,8 @@ EOF
 [Desktop Entry]
 Name=BSPWM
 Comment=Binary space partitioning window manager
-Exec=/usr/bin/bspwm
-TryExec=/usr/bin/bspwm
+Exec=/usr/local/bin/start-bspwm-session
+TryExec=/usr/local/bin/start-bspwm-session
 Type=XSession
 EOF
     ok "Sesión BSPWM registrada en LightDM"
@@ -225,6 +241,21 @@ configure_lightdm_greeter(){
   progress_step "Greeter de LightDM configurado"
 }
 
+# Reinstalación limpia de LightDM y su greeter
+reinstall_lightdm_clean(){
+  # Detener y deshabilitar LightDM si estuviera activo
+  sudo systemctl stop lightdm >/dev/null 2>&1 || true
+  sudo systemctl disable lightdm >/dev/null 2>&1 || true
+  # Respaldo y limpieza de configuración previa
+  local etc_dir="/etc/lightdm"
+  backup_if_exists "$etc_dir"
+  run_quiet sudo rm -rf "$etc_dir" || true
+  # Reinstalar paquetes base del login
+  run_quiet sudo pacman -Rns --noconfirm lightdm lightdm-gtk-greeter || true
+  run_quiet sudo pacman -S --noconfirm --noprogressbar --quiet lightdm lightdm-gtk-greeter || { warn "No se pudo reinstalar LightDM"; return 0; }
+  progress_step "LightDM reinstalado (limpio)"
+}
+
 reinstall_firefox_clean(){
   : # encabezado silencioso
   # Cerrar proceso si está corriendo
@@ -289,8 +320,22 @@ disable_conflicting_services(){
 }
 
 enable_lightdm(){
+  # Arranque gráfico por defecto
+  sudo systemctl set-default graphical.target >/dev/null 2>&1 || true
   sudo systemctl enable lightdm >/dev/null 2>&1 || warn "No se pudo habilitar lightdm"
+  sudo systemctl restart lightdm >/dev/null 2>&1 || true
   progress_step "LightDM habilitado"
+}
+
+# Asegurar servicios auxiliares del login activos
+ensure_login_services(){
+  if systemctl list-unit-files | grep -q '^accounts-daemon.service'; then
+    sudo systemctl start accounts-daemon >/dev/null 2>&1 || true
+  fi
+  if systemctl list-unit-files | grep -q '^polkit.service'; then
+    sudo systemctl start polkit >/dev/null 2>&1 || true
+  fi
+  progress_step "Servicios de login iniciados"
 }
 
 enable_networkmanager(){
@@ -368,6 +413,7 @@ main(){
   progress_step "Sistema actualizado"
   install_packages
   verify_lightdm_deps
+  reinstall_lightdm_clean
   install_yay || warn "yay no se pudo instalar"
   ensure_dirs; progress_step "Directorios preparados"
   ensure_bspwm_session
@@ -375,6 +421,7 @@ main(){
   configure_gtk_dark
   configure_lightdm_greeter
   configure_lightdm_core
+  ensure_login_services
   fix_login_loop
   reinstall_firefox_clean
   enable_lightdm
