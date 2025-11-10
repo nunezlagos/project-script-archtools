@@ -17,26 +17,40 @@ done
 bspc monitor "$mon" -a "$new" 2>/dev/null || true
 
 launch_to_desktop() {
-  local cmd="$1" class="$2"
-  if command -v "$cmd" >/dev/null 2>&1; then
-    if ! pgrep -x "$cmd" >/dev/null 2>&1 && ! pgrep -x "$class" >/dev/null 2>&1; then
+  local bin="$1" class="$2" args="${3:-}"
+  if command -v "$bin" >/dev/null 2>&1; then
+    # Evitar duplicados por nombre de binario o clase
+    if ! pgrep -x "$bin" >/dev/null 2>&1 && ! pgrep -x "$class" >/dev/null 2>&1; then
       bspc rule -a "$class" desktop="^$new" follow=off state=floating
-      "$cmd" & disown
+      nohup "$bin" $args >/dev/null 2>&1 & disown
+      # Quitar la regla para no afectar futuras ventanas
       sleep 1
       bspc rule -r "$class" 2>/dev/null || true
     fi
   fi
 }
 
-launch_to_desktop slack Slack
-launch_to_desktop discord Discord
+# Lanzar Slack y Discord en el workspace nuevo, minimizados si el binario lo soporta
+launch_to_desktop slack Slack "--start-minimized"
+launch_to_desktop discord Discord "--start-minimized"
 
 # OpenVPN: conecta si existe configuración por defecto
-if command -v openvpn3 >/dev/null 2>&1 && [[ -f "$HOME/.config/openvpn/default.ovpn" ]]; then
-  openvpn3 session-start --config "$HOME/.config/openvpn/default.ovpn" & disown
+VPN_FILE="$HOME/.config/openvpn/default.ovpn"
+NM_NAME_FILE="$HOME/.config/openvpn/nm-name"
+
+# Preferir NetworkManager si existe nombre de conexión
+if command -v nmcli >/dev/null 2>&1 && [[ -f "$NM_NAME_FILE" ]]; then
+  NM_VPN="$(cat "$NM_NAME_FILE" 2>/dev/null || echo "")"
+  if [[ -n "$NM_VPN" ]]; then
+    nmcli connection up id "$NM_VPN" >/dev/null 2>&1 & disown || true
+  fi
 fi
-if command -v openvpn >/dev/null 2>&1 && [[ -f "$HOME/.config/openvpn/default.ovpn" ]]; then
-  sudo -n openvpn --config "$HOME/.config/openvpn/default.ovpn" >/dev/null 2>&1 & disown || true
+
+# Fallback: openvpn3 o openvpn clásico con perfil por defecto
+if command -v openvpn3 >/dev/null 2>&1 && [[ -f "$VPN_FILE" ]]; then
+  openvpn3 session-start --config "$VPN_FILE" >/dev/null 2>&1 & disown || true
+elif command -v openvpn >/dev/null 2>&1 && [[ -f "$VPN_FILE" ]]; then
+  sudo -n openvpn --config "$VPN_FILE" >/dev/null 2>&1 & disown || true
 fi
 
 exit 0
