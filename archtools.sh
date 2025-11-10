@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Salida minimalista y progreso
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=19
+TOTAL_STEPS=20
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -41,8 +41,8 @@ check_internet(){
 
 # Paquetes requeridos
 packages=(
-  xorg-server xorg-xinit
-  lightdm lightdm-gtk-greeter
+  xorg-server xorg-xinit xorg-xauth
+  lightdm lightdm-gtk-greeter accountsservice polkit
   bspwm sxhkd polybar picom dunst feh kitty
   nano rofi pavucontrol firefox
   networkmanager network-manager-applet
@@ -55,6 +55,20 @@ install_packages(){
   run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || { err "Fallo al actualizar paquetes"; exit 1; }
   run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet "${packages[@]}" || warn "Algún paquete no se instaló"
   progress_step "Paquetes instalados"
+}
+
+# Verificar dependencias críticas para evitar login loop en LightDM
+verify_lightdm_deps(){
+  if ! command -v xauth >/dev/null 2>&1; then
+    warn "xorg-xauth no disponible; LightDM puede fallar creando Xauthority"
+  fi
+  if ! systemctl list-unit-files | grep -q '^accounts-daemon.service'; then
+    warn "accountsservice no instalado; el greeter no podrá consultar usuarios (DBus error)"
+  fi
+  if ! systemctl list-unit-files | grep -q '^polkit.service'; then
+    warn "polkit no instalado; algunos permisos de sesión podrían fallar"
+  fi
+  progress_step "Dependencias LightDM/Xorg verificadas"
 }
 
 
@@ -353,6 +367,7 @@ main(){
   run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Actualización previa con pacman falló"
   progress_step "Sistema actualizado"
   install_packages
+  verify_lightdm_deps
   install_yay || warn "yay no se pudo instalar"
   ensure_dirs; progress_step "Directorios preparados"
   ensure_bspwm_session
