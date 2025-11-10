@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Salida minimalista y progreso
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=17
+TOTAL_STEPS=19
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -73,7 +73,7 @@ ensure_bspwm_session(){
     backup_if_exists "$f"
     cat > "$f" <<'EOF'
 #!/bin/sh
-exec bspwm
+exec /usr/bin/bspwm
 EOF
     chown "$USER_NAME":"$USER_NAME" "$f" 2>/dev/null || true
     chmod +x "$f"
@@ -87,12 +87,34 @@ EOF
 [Desktop Entry]
 Name=BSPWM
 Comment=Binary space partitioning window manager
-Exec=bspwm
-TryExec=bspwm
-Type=Application
+Exec=/usr/bin/bspwm
+TryExec=/usr/bin/bspwm
+Type=XSession
 EOF
     ok "Sesión BSPWM registrada en LightDM"
   fi
+}
+
+# Configuración core de LightDM para usar BSPWM por defecto sin tocar otros ajustes
+configure_lightdm_core(){
+  local confd="/etc/lightdm/lightdm.conf.d"
+  sudo mkdir -p "$confd"
+  sudo tee "$confd/50-bspwm.conf" >/dev/null <<'EOF'
+[Seat:*]
+greeter-session=lightdm-gtk-greeter
+user-session=bspwm
+EOF
+  progress_step "LightDM sesión por defecto configurada"
+}
+
+# Reparar causas típicas del login loop (permisos de Xauthority)
+fix_login_loop(){
+  local xa="$HOME_DIR/.Xauthority"
+  if [[ -e "$xa" ]]; then
+    sudo chown "$USER_NAME:$USER_NAME" "$xa" 2>/dev/null || true
+    chmod 600 "$xa" 2>/dev/null || true
+  fi
+  progress_step "Login loop evitado (permisos y sesión)"
 }
 
 backup_if_exists(){
@@ -337,6 +359,8 @@ main(){
   copy_configs
   configure_gtk_dark
   configure_lightdm_greeter
+  configure_lightdm_core
+  fix_login_loop
   reinstall_firefox_clean
   enable_lightdm
   enable_networkmanager
