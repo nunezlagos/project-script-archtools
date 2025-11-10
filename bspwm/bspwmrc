@@ -60,6 +60,8 @@ dunst &
 # Tray apps (se inician siempre)
 # NetworkManager applet
 nm-applet &
+# Autostart de comunicaciones en workspace siguiente
+~/.config/bspwm/scripts/autostart_comm.sh &
 # Udiskie (automount) en bandeja — DESACTIVADO
 # udiskie --tray &
 # Flameshot (capturas con icono de bandeja) — DESACTIVADO
