@@ -5,20 +5,13 @@ import Qt.labs.folderlistmodel 2.1
 Rectangle {
   id: root
   width: 1920; height: 1080
-  // Paleta Nordic darker (X11)
-  readonly property color nord0: "#2E3440" // base
-  readonly property color nord1: "#3B4252" // panel
-  readonly property color nord2: "#434C5E" // borde
-  readonly property color nord3: "#4C566A" // selección
-  readonly property color nord4: "#D8DEE9" // texto claro
-  readonly property color nord5: "#E5E9F0"
-  readonly property color nord6: "#ECEFF4"
-  readonly property color nord7: "#8FBCBB" // acentos
-  readonly property color nord8: "#88C0D0"
-  readonly property color nord9: "#81A1C1"
-  readonly property color nord10: "#5E81AC"
-  readonly property color accentRed: "#BF616A" // red accent
-  color: nord0
+  // Paleta monocromática (grises/negros/blancos)
+  readonly property color bgDark: "#0E0F12"
+  readonly property color panelDark: "#1A1C1F"
+  readonly property color borderLight: Qt.rgba(1,1,1,0.22) // blanco sutil
+  readonly property color textLight: "#FFFFFF"            // blanco para texto
+  readonly property color textMuted: Qt.rgba(1,1,1,0.70)  // blanco atenuado
+  color: bgDark
 
   property string defaultSession: "bspwm"
   property string selectedSession: defaultSession
@@ -37,10 +30,10 @@ Rectangle {
     fillMode: Image.PreserveAspectCrop
     visible: bgpng.status !== Image.Ready
   }
-  // Dark overlay to improve contrast
+  // Overlay para mejorar el contraste
   Rectangle {
     anchors.fill: parent
-    color: Qt.rgba(0,0,0,0.35)
+    color: Qt.rgba(0,0,0,0.30)
   }
   Rectangle {
     // Explicit fallback if both images fail to load
@@ -49,12 +42,12 @@ Rectangle {
     visible: bgpng.status !== Image.Ready && bgjpg.status !== Image.Ready
   }
 
-    // Soft shadow behind panel (simple rectangle, no GraphicalEffects)
+    // Sombra suave detrás del panel (sin GraphicalEffects)
     Rectangle {
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.verticalCenter: parent.verticalCenter
       width: 540; height: 340
-      radius: 18
+      radius: 5
       color: "#000000"
       opacity: 0.25
     }
@@ -62,39 +55,39 @@ Rectangle {
     Rectangle {
     id: panel
     width: 520; height: 320
-    radius: 16
-    color: nord1
+    radius: 5
+    color: panelDark
     opacity: 0.94
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.verticalCenter: parent.verticalCenter
-    border.color: nord2; border.width: 1
+    border.color: borderLight; border.width: 1
 
     Column {
       anchors.fill: parent
       anchors.margins: 28
       spacing: 16
 
-      Label { text: "Username"; color: nord4 }
+      Label { text: "Username"; color: textMuted }
       TextField {
         id: userField
         placeholderText: "Username"
         font.pixelSize: 16
-        color: nord6
-        selectionColor: nord3
-        background: Rectangle { color: nord0; radius: 6; border.color: nord2 }
+        color: textLight
+        selectionColor: Qt.rgba(1,1,1,0.25)
+        background: Rectangle { color: panelDark; radius: 5; border.color: borderLight }
         text: sddm.lastUser || ""
         Keys.onReturnPressed: passField.focus = true
       }
 
-      Label { text: "Password"; color: nord4 }
+      Label { text: "Password"; color: textMuted }
       TextField {
         id: passField
         placeholderText: "Password"
         echoMode: TextInput.Password
         font.pixelSize: 16
-        color: nord6
-        selectionColor: nord3
-        background: Rectangle { color: nord0; radius: 6; border.color: nord2 }
+        color: textLight
+        selectionColor: Qt.rgba(1,1,1,0.25)
+        background: Rectangle { color: panelDark; radius: 5; border.color: borderLight }
         Keys.onReturnPressed: loginBtn.clicked()
       }
 
@@ -103,12 +96,13 @@ Rectangle {
         // Session selector (bspwm/i3/etc.) from /usr/share/xsessions
         Column {
           spacing: 6
-          Label { text: "Session"; color: nord4 }
+          Label { text: "Session"; color: textMuted }
           ComboBox {
             id: sessionCombo
             model: xsessions
             textRole: "fileName"
             width: 220
+            background: Rectangle { color: Qt.rgba(1,1,1,0.08); radius: 5; border.color: borderLight }
             onActivated: {
               var fname = xsessions.get(index).fileName
               selectedSession = fname.replace(".desktop", "")
@@ -118,8 +112,12 @@ Rectangle {
         Button {
           id: loginBtn
           text: "Login"
-          contentItem: Label { text: loginBtn.text; color: nord6; font.bold: true }
-          background: Rectangle { radius: 6; color: accentRed; border.color: nord9 }
+          contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
+          background: Rectangle {
+            radius: 5
+            color: Qt.rgba(1,1,1,0.12)
+            border.color: borderLight
+          }
           onClicked: {
             sddm.login(userField.text, passField.text, selectedSession)
           }
