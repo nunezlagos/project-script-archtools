@@ -5,8 +5,7 @@ vmware-user-suid-wrapper &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
 
-# Inicia con máximo 3 escritorios
-bspc monitor -d 1 2 3
+bspc monitor -d 1 2 3 4 5 6 7 
 bspc config border_width         1
 bspc config window_gap         	12
 
@@ -20,31 +19,13 @@ bspc rule -a mplayer2 state=floating
 bspc rule -a Kupfer.py focus=on
 bspc rule -a Screenkey manage=off
 
-# Floating rules for control center utilities
-bspc rule -a Pavucontrol state=floating center=on
-bspc rule -a pavucontrol state=floating center=on
-bspc rule -a nm-connection-editor state=floating center=on
-bspc rule -a Nm-connection-editor state=floating center=on
-bspc rule -a Blueberry state=floating center=on
-bspc rule -a blueberry state=floating center=on
-bspc rule -a Nitrogen state=floating center=on
-bspc rule -a nitrogen state=floating center=on
-
-# Audio graph tools
-bspc rule -a helvum state=floating center=on
-bspc rule -a qpwgraph state=floating center=on
-
-# Archivos/Edición desde iconos inferiores
-bspc rule -a Thunar state=floating center=on
-bspc rule -a Geany state=floating center=on
-
 # RESOLUTION
 
 # WALLPAPER
 feh --bg-fill ~/.config/wallpaper/onigirl.png
 #feh --bg-fill ~/.config/wallpaper/wallpaper_2.jpg
 # POLYBAR
-~/.config/polybar/launch.sh &
+~/.config/polybar/launch.sh
 
 # CUSTOM
 bspc config focus_follows_pointer true
@@ -54,36 +35,5 @@ picom &
 bspc config border_width 0
 
 xsetroot -cursor_name left_ptr &
-
-# DUNST (notificaciones)
-dunst &
-
-# Tray apps (se inician siempre)
-# NetworkManager applet
-nm-applet &
-# Desactivar autorepetición para teclas numéricas 1..8 (mejora "mantener" en sxhkd)
-# Nota: afecta repetición de dígitos globalmente; quita estas líneas si no te conviene.
-xset -r 10 11 12 13 14 15 16 17 &
-# Autostart de comunicaciones en workspace siguiente
-~/.config/bspwm/scripts/autostart_comm.sh &
-# Udiskie (automount) en bandeja — DESACTIVADO
-# udiskie --tray &
-# Flameshot (capturas con icono de bandeja) — DESACTIVADO
-# flameshot &
-# Pasystray (icono de audio) — DESACTIVADO
-# pasystray &
-
-# Ventanas flotantes para apps de chat/comunicación
-bspc rule -a Slack state=floating center=on
-bspc rule -a slack state=floating center=on
-bspc rule -a discord state=floating center=on
-bspc rule -a Discord state=floating center=on
-bspc rule -a TelegramDesktop state=floating center=on
-bspc rule -a zoom state=floating center=on
-bspc rule -a Signal state=floating center=on
-
-# Firefox: ventanas privadas flotantes (en inglés/español)
-bspc rule -a firefox -o name~='Private Browsing' state=floating center=on
-bspc rule -a firefox -o name~='Navegación privada' state=floating center=on
 
 
