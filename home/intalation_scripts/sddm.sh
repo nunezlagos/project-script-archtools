@@ -141,7 +141,8 @@ validate_sddm_theme(){
     # Run greeter in test mode to catch QML import errors without starting the DM
     local out="/tmp/sddm-greeter-test.log"
     if ! sddm-greeter --test-mode --theme "$THEME_DEST_DIR" >"$out" 2>&1; then
-      log "Greeter test failed. Relevant output:"; sed -n '1,200p' "$out" || true; issues=1
+      # No mostramos logs en pantalla; dejamos constancia mínima
+      log "Greeter test failed (see $out)"; issues=1
       # Hint for common missing modules
       if grep -qi "QtGraphicalEffects" "$out"; then log "Hint: install qt6-graphicaleffects"; fi
       if grep -qi "QtQuick.Controls" "$out"; then log "Hint: install qt6-quickcontrols2"; fi
@@ -213,10 +214,6 @@ main(){
   deploy_theme
   if ! validate_sddm_theme; then
     log "SDDM validation failed; aborting installation."
-    # Show recent sddm journal if available
-    if command -v journalctl >/dev/null 2>&1; then
-      log "Recent SDDM logs:"; journalctl -u sddm -n 100 --no-pager 2>/dev/null || true
-    fi
     exit 1
   fi
   deploy_config

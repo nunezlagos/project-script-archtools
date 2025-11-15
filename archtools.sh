@@ -348,10 +348,7 @@ main(){
   if [[ -f "$SDDM_SCRIPT" ]]; then
     if ! sudo bash "$SDDM_SCRIPT" >>"$LOG_FILE" 2>&1; then
       warn "SDDM reported issues; continuing and logging details."
-      echo "----- Last 150 lines from $LOG_FILE -----"
-      tail -n 150 "$LOG_FILE" 2>/dev/null || true
-      echo "----- Recent SDDM journal -----"
-      journalctl -u sddm -n 100 --no-pager 2>/dev/null || true
+      # Se elimina la impresión de logs y journalctl para mantener salida limpia
     fi
     progress_step "SDDM installed"
   else
