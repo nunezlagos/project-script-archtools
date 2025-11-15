@@ -68,7 +68,13 @@ super + {_,shift + }c
 
 # focus the next/previous desktop in the current monitor
 super + bracket{left,right}
-	bspc desktop -f {prev,next}.local
+    bspc desktop -f {prev,next}.local
+
+# quick workspace navigation
+super + {Left,h}
+    bspc desktop -f prev.local
+super + {Right,l}
+    bspc desktop -f next.local
 
 # focus the last node/desktop
 super + {grave,Tab}
@@ -80,13 +86,11 @@ super + {o,i}
 	bspc node {older,newer} -f; \
 	bspc wm -h on
 
-# focus or send to the given desktop
-super + {_,shift + }{1-9,0}
-	bspc {desktop -f,node -d} '^{1-9,10}'
+# go to workspace (create missing sequence up to N)
+super + {1-8}
+    ~/.config/bspwm/scripts/ws_goto.sh {1-8}
 
-# create a new workspace up to 8
-super + n
-	~/.config/polybar/scripts/ws_add.sh
+## removed: create workspace via polybar '+'
 
 #############
 # preselect #
