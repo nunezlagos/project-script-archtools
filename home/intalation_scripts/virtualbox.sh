@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Detecta VirtualBox y configura guest additions en Arch Linux
+# Detecta VirtualBox y configura guest additions en Arch Linux de forma segura
 
 log(){ echo "[virtualbox] $1"; }
 run_quiet(){ "$@" >/dev/null 2>&1 || true; }
@@ -17,32 +17,43 @@ if [[ "$virt" != "oracle" && "$virt" != "vbox" ]]; then
   exit 0
 fi
 
-log "Detectado VirtualBox: instalando guest additions"
-if command -v pacman >/dev/null 2>&1; then
-  pacman -S --needed --noconfirm virtualbox-guest-utils || true
-else
-  log "pacman no disponible; instala manualmente virtualbox-guest-utils"
-fi
+install_guest_additions(){
+  if ! command -v pacman >/dev/null 2>&1; then
+    log "pacman no disponible; instala manualmente guest additions"
+    return 0
+  fi
+  log "Instalando paquetes de Guest Additions"
+  # Preferir módulos precompilados para kernel de Arch
+  if pacman -Si virtualbox-guest-modules-arch >/dev/null 2>&1; then
+    pacman -S --needed --noconfirm virtualbox-guest-utils virtualbox-guest-modules-arch || true
+  else
+    # Fallback a DKMS (requiere headers del kernel)
+    pacman -S --needed --noconfirm virtualbox-guest-utils virtualbox-guest-dkms linux-headers || true
+  fi
+}
 
-# Habilitar servicio
-run_quiet systemctl enable vboxservice
-run_quiet systemctl start vboxservice
+configure_services(){
+  run_quiet systemctl enable vboxservice
+  run_quiet systemctl start vboxservice
+}
 
-# Cargar módulos en arranque
-mkdir -p /etc/modules-load.d
-cat >/etc/modules-load.d/virtualbox.conf <<'EOF'
-vboxguest
-vboxsf
-vboxvideo
-EOF
-
-# Optimiza resolución automática
-mkdir -p /etc/X11/xorg.conf.d
-cat >/etc/X11/xorg.conf.d/20-virtualbox.conf <<'EOF'
+configure_xorg(){
+  mkdir -p /etc/X11/xorg.conf.d
+  cat >/etc/X11/xorg.conf.d/20-virtualbox.conf <<'EOF'
 Section "Device"
   Identifier  "VirtualBox Graphics"
   Driver      "vboxvideo"
 EndSection
 EOF
+}
 
-log "Guest additions configuradas. Reinicia para aplicar completamente."
+install_guest_additions
+configure_services
+configure_xorg
+
+# Regenerar initramfs por si hubo actualización de kernel/módulos
+if command -v mkinitcpio >/dev/null 2>&1; then
+  run_quiet mkinitcpio -P
+fi
+
+log "Guest Additions configuradas. Reinicia para aplicar completamente."
