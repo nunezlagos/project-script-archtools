@@ -61,6 +61,7 @@ Rectangle {
     Column {
       anchors.fill: parent
       anchors.margins: 8
+      anchors.topMargin: 24
       spacing: 12
       // Padding superior general
       Item { height: 36 }
