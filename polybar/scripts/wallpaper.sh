@@ -19,35 +19,22 @@ list_images(){
 apply_wallpaper(){
   local img="$1"
   if [ -z "$img" ]; then return 0; fi
-  # Wayland con swww (transición radial desde el centro, imagen nítida)
-  if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && command -v swww >/dev/null 2>&1; then
-    swww init 2>/dev/null || true
-    # Efecto "grow" desde el centro (50%,50%), easing suave
-    swww img "$img" \
-      --transition-type grow \
-      --transition-pos 50%,50% \
-      --transition-bezier 0.19,1,0.22,1 \
-      --transition-duration 1.1 \
-      --transition-fps 60
-  else
-    # X11: usa overlay para transición suave y luego aplica con feh
-    if command -v mpv >/dev/null 2>&1; then
-      # Primero detenemos preview (si existe) para evitar solapamiento
-      stop_preview || true
-      # 1) Preview difusa desde el centro (corta) y 2) Imagen nítida con fade-in
-      # Paso 2: imagen nítida con fade-in para dar sensación de "aclara desde el centro"
-      mpv "$img" --fs --no-border --ontop --really-quiet \
-          --image-display-duration=1.0 --keep-open=no --no-input-default-bindings \
-          --vf=lavfi=[fade=in:0:60] >/dev/null 2>&1 &
-      echo $! > "$STATE_PID"
-      sleep 0.50
-    fi
-    feh --bg-fill "$img"
-    # Apaga overlay para simular transición de salida con picom
-    if [ -f "$STATE_PID" ]; then
-      kill "$(cat "$STATE_PID")" >/dev/null 2>&1 || true
-      rm -f "$STATE_PID"
-    fi
+  # Solo X11: overlay de transición suave y aplicación con feh
+  if command -v mpv >/dev/null 2>&1; then
+    # Primero detenemos preview (si existe) para evitar solapamiento
+    stop_preview || true
+    # Imagen nítida con fade-in para dar sensación de "aclara desde el centro"
+    mpv "$img" --fs --no-border --ontop --really-quiet \
+        --image-display-duration=1.0 --keep-open=no --no-input-default-bindings \
+        --vf=lavfi=[fade=in:0:60] >/dev/null 2>&1 &
+    echo $! > "$STATE_PID"
+    sleep 0.50
+  fi
+  feh --bg-fill "$img"
+  # Apaga overlay para simular transición de salida con picom
+  if [ -f "$STATE_PID" ]; then
+    kill "$(cat "$STATE_PID")" >/dev/null 2>&1 || true
+    rm -f "$STATE_PID"
   fi
 }
 

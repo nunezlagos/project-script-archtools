@@ -42,8 +42,7 @@ check_internet(){
 # Paquetes requeridos
 packages=(
   xorg-server xorg-xinit xorg-xauth
-  lightdm lightdm-gtk-greeter accountsservice polkit
-  bspwm sxhkd polybar picom dunst feh kitty
+  bspwm sxhkd polybar picom dunst feh kitty fish
   nano rofi pavucontrol firefox
   networkmanager network-manager-applet
   nm-connection-editor
@@ -57,24 +56,12 @@ install_packages(){
   progress_step "Paquetes instalados"
 }
 
-# Verificar dependencias críticas para evitar login loop en LightDM
-verify_lightdm_deps(){
-  if ! command -v xauth >/dev/null 2>&1; then
-    warn "xorg-xauth no disponible; LightDM puede fallar creando Xauthority"
-  fi
-  if ! systemctl list-unit-files | grep -q '^accounts-daemon.service'; then
-    warn "accountsservice no instalado; el greeter no podrá consultar usuarios (DBus error)"
-  fi
-  if ! systemctl list-unit-files | grep -q '^polkit.service'; then
-    warn "polkit no instalado; algunos permisos de sesión podrían fallar"
-  fi
-  progress_step "Dependencias LightDM/Xorg verificadas"
-}
+# (eliminado) Verificación específica de LightDM
 
 
 ensure_dirs(){
   mkdir -p "$CONFIG_DIR" && ok "Directorio base: $CONFIG_DIR"
-  for d in bspwm sxhkd polybar polybar/scripts picom dunst kitty alacritty wallpaper rofi; do
+  for d in bspwm sxhkd polybar polybar/scripts picom dunst kitty fish wallpaper rofi; do
     mkdir -p "$CONFIG_DIR/$d"
   done
 }
@@ -110,7 +97,7 @@ EOF
     : # silencioso
   done
   progress_step "Sesión BSPWM configurada"
-  # Entrada de sesión para LightDM
+  # Entrada de sesión de XSession (para gestores de inicio que la respeten)
   local desktop="/usr/share/xsessions/bspwm.desktop"
   if [[ ! -f "$desktop" ]]; then
     sudo tee "$desktop" >/dev/null <<'EOF'
@@ -121,21 +108,11 @@ Exec=/usr/local/bin/start-bspwm-session
 TryExec=/usr/local/bin/start-bspwm-session
 Type=XSession
 EOF
-    ok "Sesión BSPWM registrada en LightDM"
+    ok "Sesión BSPWM registrada"
   fi
 }
 
-# Configuración core de LightDM para usar BSPWM por defecto sin tocar otros ajustes
-configure_lightdm_core(){
-  local confd="/etc/lightdm/lightdm.conf.d"
-  sudo mkdir -p "$confd"
-  sudo tee "$confd/50-bspwm.conf" >/dev/null <<'EOF'
-[Seat:*]
-greeter-session=lightdm-gtk-greeter
-user-session=bspwm
-EOF
-  progress_step "LightDM sesión por defecto configurada"
-}
+# (eliminado) Configuración de LightDM
 
 # Reparar causas típicas del login loop (permisos de Xauthority)
 fix_login_loop(){
@@ -166,7 +143,8 @@ copy_configs(){
     ["$SCRIPT_DIR/picom/picom.conf"]="$CONFIG_DIR/picom/picom.conf"
     ["$SCRIPT_DIR/dunst"]="$CONFIG_DIR/dunst"
     ["$SCRIPT_DIR/kitty/kitty.conf"]="$CONFIG_DIR/kitty/kitty.conf"
-    ["$SCRIPT_DIR/alacritty/alacritty.yml"]="$CONFIG_DIR/alacritty/alacritty.yml"
+    ["$SCRIPT_DIR/kitty/kitty2.conf"]="$CONFIG_DIR/kitty/kitty2.conf"
+    ["$SCRIPT_DIR/fish/config.fish"]="$CONFIG_DIR/fish/config.fish"
     ["$SCRIPT_DIR/rofi/config.rasi"]="$CONFIG_DIR/rofi/config.rasi"
     ["$SCRIPT_DIR/wallpaper"]="$CONFIG_DIR/wallpaper"
   )
@@ -203,58 +181,9 @@ EOF
   progress_step "GTK dark configurado"
 }
 
-# Configurar LightDM (greeter GTK) con fondo oscuro y profesional
-configure_lightdm_greeter(){
-  local etc_dir="/etc/lightdm"
-  local sys_bg="/usr/share/pixmaps/login-bg.png"
-  sudo mkdir -p "$etc_dir"
+# (eliminado) Configuración del greeter de LightDM
 
-  # Copiar configuración del greeter
-  if [[ -f "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.conf" ]]; then
-    sudo cp "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.conf" "$etc_dir/lightdm-gtk-greeter.conf" >/dev/null 2>&1 || warn "No se pudo copiar greeter.conf"
-  else
-    warn "Archivo de greeter no encontrado en repo"
-  fi
-
-  # Copiar CSS personalizado de acentos rojos
-  if [[ -f "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.css" ]]; then
-    sudo cp "$SCRIPT_DIR/lightdm/lightdm-gtk-greeter.css" "$etc_dir/lightdm-gtk-greeter.css" >/dev/null 2>&1 || warn "No se pudo copiar greeter.css"
-  fi
-
-  # Copiar fondo al sistema (preferir wallpaper login.png; fallback a onigirl.png)
-  local src_login_1="$CONFIG_DIR/wallpaper/login.png"
-  local src_login_2="$SCRIPT_DIR/wallpaper/login.png"
-  local src_oni_1="$CONFIG_DIR/wallpaper/onigirl.png"
-  local src_oni_2="$SCRIPT_DIR/wallpaper/onigirl.png"
-  if [[ -f "$src_login_1" ]]; then
-    sudo install -Dm644 "$src_login_1" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar login.png"
-  elif [[ -f "$src_login_2" ]]; then
-    sudo install -Dm644 "$src_login_2" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar login.png"
-  elif [[ -f "$src_oni_1" ]]; then
-    sudo install -Dm644 "$src_oni_1" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar onigirl.png"
-  elif [[ -f "$src_oni_2" ]]; then
-    sudo install -Dm644 "$src_oni_2" "$sys_bg" >/dev/null 2>&1 || warn "No se pudo instalar onigirl.png"
-  else
-    warn "No se encontró login.png ni onigirl.png; mantengo fondo por defecto"
-  fi
-
-  progress_step "Greeter de LightDM configurado"
-}
-
-# Reinstalación limpia de LightDM y su greeter
-reinstall_lightdm_clean(){
-  # Detener y deshabilitar LightDM si estuviera activo
-  sudo systemctl stop lightdm >/dev/null 2>&1 || true
-  sudo systemctl disable lightdm >/dev/null 2>&1 || true
-  # Respaldo y limpieza de configuración previa
-  local etc_dir="/etc/lightdm"
-  backup_if_exists "$etc_dir"
-  run_quiet sudo rm -rf "$etc_dir" || true
-  # Reinstalar paquetes base del login
-  run_quiet sudo pacman -Rns --noconfirm lightdm lightdm-gtk-greeter || true
-  run_quiet sudo pacman -S --noconfirm --noprogressbar --quiet lightdm lightdm-gtk-greeter || { warn "No se pudo reinstalar LightDM"; return 0; }
-  progress_step "LightDM reinstalado (limpio)"
-}
+# (eliminado) Reinstalación de LightDM
 
 reinstall_firefox_clean(){
   : # encabezado silencioso
@@ -310,7 +239,7 @@ install_yay(){
 }
 
 disable_conflicting_services(){
-  for svc in gdm sddm; do
+  for svc in gdm lightdm lxdm; do
     if systemctl list-unit-files | grep -q "^${svc}.service"; then
       sudo systemctl disable "$svc" >/dev/null 2>&1 || true
       sudo systemctl stop "$svc" >/dev/null 2>&1 || true
@@ -319,13 +248,7 @@ disable_conflicting_services(){
   done
 }
 
-enable_lightdm(){
-  # Arranque gráfico por defecto
-  sudo systemctl set-default graphical.target >/dev/null 2>&1 || true
-  sudo systemctl enable lightdm >/dev/null 2>&1 || warn "No se pudo habilitar lightdm"
-  sudo systemctl restart lightdm >/dev/null 2>&1 || true
-  progress_step "LightDM habilitado"
-}
+# (eliminado) Habilitación de LightDM
 
 # Asegurar servicios auxiliares del login activos
 ensure_login_services(){
@@ -385,7 +308,6 @@ write_command_list(){
 - componentes típicos: `bspwm sxhkd polybar picom dunst kitty rofi wallpaper`
 
 ## Servicios
-- activar display manager: `sudo systemctl enable lightdm && sudo systemctl restart lightdm`
 - activar red: `sudo systemctl enable NetworkManager && sudo systemctl start NetworkManager`
 
 EOF
@@ -412,20 +334,25 @@ main(){
   run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Actualización previa con pacman falló"
   progress_step "Sistema actualizado"
   install_packages
-  verify_lightdm_deps
-  reinstall_lightdm_clean
+  # (LightDM eliminado)
   install_yay || warn "yay no se pudo instalar"
   ensure_dirs; progress_step "Directorios preparados"
   ensure_bspwm_session
   copy_configs
   configure_gtk_dark
-  configure_lightdm_greeter
-  configure_lightdm_core
+  # (LightDM eliminado)
   ensure_login_services
   fix_login_loop
   reinstall_firefox_clean
-  enable_lightdm
+  # (LightDM eliminado)
   enable_networkmanager
+  # Instalar y configurar login SDDM
+  if [[ -x "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" ]]; then
+    sudo bash "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" >>"$LOG_FILE" 2>&1 || warn "Instalación de SDDM reportó problemas"
+    progress_step "SDDM instalado"
+  else
+    warn "Script SDDM no encontrado en home/intalation_scripts/sddm.sh"
+  fi
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
   progress_step "Permisos configurados"
   write_command_list

@@ -28,30 +28,14 @@ preview_cmd(){
 apply_wallpaper(){
   local img="$1"
   [ -z "$img" ] && return 0
-  if [ "${XDG_SESSION_TYPE:-}" = "wayland" ] && command -v swww >/dev/null 2>&1; then
-    swww init 2>/dev/null || true
-    swww img "$img" \
-      --transition-type grow \
-      --transition-pos 50%,50% \
-      --transition-bezier 0.19,1,0.22,1 \
-      --transition-duration 1.1 \
-      --transition-fps 60
-  else
-    # X11: blur breve y luego overlay nítido con fade-in; después aplica con feh
-    if command -v mpv >/dev/null 2>&1; then
-      # Fase 1: overlay con blur corto
-      mpv "$img" --fs --no-border --ontop --really-quiet \
-        --image-display-duration=0.60 --keep-open=no --no-input-default-bindings \
-        --vf=lavfi=[gblur=sigma=16:steps=2, vignette=0.25:0.45] >/dev/null 2>&1 &
-      sleep 0.65
-      # Fase 2: overlay nítido con fade-in
-      mpv "$img" --fs --no-border --ontop --really-quiet \
-        --image-display-duration=1.0 --keep-open=no --no-input-default-bindings \
-        --vf=lavfi=[fade=in:0:60] >/dev/null 2>&1 &
-      sleep 0.50
-    fi
-    feh --bg-fill "$img"
+  # Solo X11: overlay nítido con fade-in y luego aplicar con feh
+  if command -v mpv >/dev/null 2>&1; then
+    mpv "$img" --fs --no-border --ontop --really-quiet \
+      --image-display-duration=1.0 --keep-open=no --no-input-default-bindings \
+      --vf=lavfi=[fade=in:0:60] >/dev/null 2>&1 &
+    sleep 0.50
   fi
+  feh --bg-fill "$img"
   notify-send "Wallpaper aplicado" "$(basename "$img")" || true
 }
 
