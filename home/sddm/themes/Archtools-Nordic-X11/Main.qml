@@ -142,20 +142,30 @@ Rectangle {
         color: Qt.rgba(1,1,1,0.12)
         border.color: borderLight
       }
-      onClicked: sessionMenu.open()
+      onClicked: sessionPopup.open()
     }
   }
 
-  Menu {
-    id: sessionMenu
-    Instantiator {
+  Popup {
+    id: sessionPopup
+    x: footer.x + footer.width - width
+    y: footer.y - height - 8
+    width: 160
+    padding: 8
+    background: Rectangle {
+      radius: 5
+      color: panelDark
+      border.color: borderLight
+      border.width: 1
+    }
+    contentItem: ListView {
+      clip: true
       model: xsessions
-      delegate: MenuItem {
-        text: model.fileName.replace(".desktop","")
-        onTriggered: selectedSession = text
+      delegate: ItemDelegate {
+        width: sessionPopup.width - 16
+        text: model.fileName.replace(".desktop", "")
+        onClicked: { selectedSession = text; sessionPopup.close(); }
       }
-      onObjectAdded: sessionMenu.insertItem(index, object)
-      onObjectRemoved: sessionMenu.removeItem(object)
     }
   }
 
