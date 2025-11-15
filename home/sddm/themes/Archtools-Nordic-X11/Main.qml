@@ -30,22 +30,14 @@ Rectangle {
     color: Qt.rgba(0,0,0,0.50)
   }
 
-    // Sombra suave detrás del panel (sin GraphicalEffects)
-    Rectangle {
-      anchors.horizontalCenter: parent.horizontalCenter
-      anchors.verticalCenter: parent.verticalCenter
-      width: panel.width + 20; height: panel.height + 20
-      radius: 5
-      color: "#000000"
-      opacity: 0.25
-    }
+    // Sombra exterior eliminada
 
     Rectangle {
     id: panel
     width: 400; height: 200
     radius: 5
     color: panelDark
-    opacity: 0.90
+    opacity: 0.80
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.verticalCenter: parent.verticalCenter
     border.width: 0
@@ -58,14 +50,16 @@ Rectangle {
       anchors.fill: parent
       anchors.margins: 8
       spacing: 6
+      // Padding superior general
+      Item { height: 12 }
 
-      Label { text: "Username"; color: textMuted }
+  
       TextField {
         id: userField
         placeholderText: "Username"
         font.pixelSize: 16
         color: textLight
-        width: 180; height: 32
+        width: 360; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -75,14 +69,14 @@ Rectangle {
         Keys.onReturnPressed: passField.focus = true
       }
 
-      Label { text: "Password"; color: textMuted }
+ 
       TextField {
         id: passField
         placeholderText: "Password"
         echoMode: TextInput.Password
         font.pixelSize: 16
         color: textLight
-        width: 180; height: 32
+        width: 360; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -91,9 +85,11 @@ Rectangle {
         Keys.onReturnPressed: sddm.login(userField.text, passField.text, selectedSession)
       }
 
+      // Padding superior antes del botón
+      Item { height: 10 }
       Button {
         id: loginBtn
-        width: 100; height: 32
+        width: 180; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         text: "Login"
         contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
