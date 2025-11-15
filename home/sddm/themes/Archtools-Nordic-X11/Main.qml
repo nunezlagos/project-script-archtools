@@ -51,7 +51,7 @@ Rectangle {
       anchors.margins: 8
       spacing: 6
       // Padding superior general
-      Item { height: 12 }
+      Item { height: 30 }
 
   
       TextField {
@@ -59,7 +59,7 @@ Rectangle {
         placeholderText: "Username"
         font.pixelSize: 16
         color: textLight
-        width: 180; height: 32
+        width: 360; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -69,7 +69,7 @@ Rectangle {
         Keys.onReturnPressed: passField.focus = true
       }
 
-      Item { height: 10 }
+      Item { height: 30 }
  
       TextField {
         id: passField
@@ -77,7 +77,7 @@ Rectangle {
         echoMode: TextInput.Password
         font.pixelSize: 16
         color: textLight
-        width: 180; height: 32
+        width: 360; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -87,10 +87,10 @@ Rectangle {
       }
 
       // Padding superior antes del botón
-      Item { height: 10 }
+      Item { height: 30 }
       Button {
         id: loginBtn
-        width: 100; height: 32
+        width: 200; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         text: "Login"
         contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
