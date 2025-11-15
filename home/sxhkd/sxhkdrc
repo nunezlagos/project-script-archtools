@@ -129,6 +129,47 @@ super + @8
 
 ## removed: create workspace via polybar '+'
 
+# send focused window to workspace (create up to N) and enable long-press confirm
+super + shift + 1
+    ~/.config/bspwm/scripts/ws_hold_send.sh 1 press & ~/.config/bspwm/scripts/ws_send.sh 1
+super + shift + @1
+    ~/.config/bspwm/scripts/ws_hold_send.sh 1 release
+
+super + shift + 2
+    ~/.config/bspwm/scripts/ws_hold_send.sh 2 press & ~/.config/bspwm/scripts/ws_send.sh 2
+super + shift + @2
+    ~/.config/bspwm/scripts/ws_hold_send.sh 2 release
+
+super + shift + 3
+    ~/.config/bspwm/scripts/ws_hold_send.sh 3 press & ~/.config/bspwm/scripts/ws_send.sh 3
+super + shift + @3
+    ~/.config/bspwm/scripts/ws_hold_send.sh 3 release
+
+super + shift + 4
+    ~/.config/bspwm/scripts/ws_hold_send.sh 4 press & ~/.config/bspwm/scripts/ws_send.sh 4
+super + shift + @4
+    ~/.config/bspwm/scripts/ws_hold_send.sh 4 release
+
+super + shift + 5
+    ~/.config/bspwm/scripts/ws_hold_send.sh 5 press & ~/.config/bspwm/scripts/ws_send.sh 5
+super + shift + @5
+    ~/.config/bspwm/scripts/ws_hold_send.sh 5 release
+
+super + shift + 6
+    ~/.config/bspwm/scripts/ws_hold_send.sh 6 press & ~/.config/bspwm/scripts/ws_send.sh 6
+super + shift + @6
+    ~/.config/bspwm/scripts/ws_hold_send.sh 6 release
+
+super + shift + 7
+    ~/.config/bspwm/scripts/ws_hold_send.sh 7 press & ~/.config/bspwm/scripts/ws_send.sh 7
+super + shift + @7
+    ~/.config/bspwm/scripts/ws_hold_send.sh 7 release
+
+super + shift + 8
+    ~/.config/bspwm/scripts/ws_hold_send.sh 8 press & ~/.config/bspwm/scripts/ws_send.sh 8
+super + shift + @8
+    ~/.config/bspwm/scripts/ws_hold_send.sh 8 release
+
 #############
 # preselect #
 #############
