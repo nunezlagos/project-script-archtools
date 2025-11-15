@@ -93,7 +93,7 @@ Rectangle {
         verticalAlignment: Text.AlignVCenter
         selectionColor: Qt.rgba(1,1,1,0.25)
         background: Rectangle { color: panelDark; radius: 5; border.color: parent.activeFocus ? Qt.rgba(1,1,1,0.45) : borderLight }
-        Keys.onReturnPressed: loginBtn.clicked()
+        Keys.onReturnPressed: sddm.login(userField.text, passField.text, selectedSession)
       }
 
       Item {
