@@ -343,16 +343,16 @@ main(){
   # (LightDM eliminado)
   ensure_login_services
   fix_login_loop
-  reinstall_firefox_clean
-  # (LightDM eliminado)
-  enable_networkmanager
-  # Instalar y configurar login SDDM
+  # Install and enforce SDDM after dotfiles are installed
   if [[ -x "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" ]]; then
     sudo bash "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" >>"$LOG_FILE" 2>&1 || warn "SDDM installation reported issues"
     progress_step "SDDM installed"
   else
     warn "SDDM script not found at home/intalation_scripts/sddm.sh"
   fi
+  reinstall_firefox_clean
+  # (LightDM eliminado)
+  enable_networkmanager
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
   progress_step "Permissions set"
   write_command_list
