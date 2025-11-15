@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.0
+import Qt.labs.folderlistmodel 2.1
 
 Rectangle {
   id: root
@@ -16,9 +17,11 @@ Rectangle {
   readonly property color nord8: "#88C0D0"
   readonly property color nord9: "#81A1C1"
   readonly property color nord10: "#5E81AC"
+  readonly property color accentRed: "#BF616A" // red accent
   color: nord0
 
   property string defaultSession: "bspwm"
+  property string selectedSession: defaultSession
 
   // Background: try PNG, fallback to JPG
   Image {
@@ -34,6 +37,11 @@ Rectangle {
     fillMode: Image.PreserveAspectCrop
     visible: bgpng.status !== Image.Ready
   }
+  // Dark overlay to improve contrast
+  Rectangle {
+    anchors.fill: parent
+    color: Qt.rgba(0,0,0,0.35)
+  }
   Rectangle {
     // Explicit fallback if both images fail to load
     anchors.fill: parent
@@ -41,10 +49,20 @@ Rectangle {
     visible: bgpng.status !== Image.Ready && bgjpg.status !== Image.Ready
   }
 
+    // Soft shadow behind panel (simple rectangle, no GraphicalEffects)
+    Rectangle {
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+      width: 540; height: 340
+      radius: 18
+      color: "#000000"
+      opacity: 0.25
+    }
+
     Rectangle {
     id: panel
-    width: 420; height: 250
-    radius: 12
+    width: 520; height: 320
+    radius: 16
     color: nord1
     opacity: 0.94
     anchors.horizontalCenter: parent.horizontalCenter
@@ -53,9 +71,10 @@ Rectangle {
 
     Column {
       anchors.fill: parent
-      anchors.margins: 24
-      spacing: 12
+      anchors.margins: 28
+      spacing: 16
 
+      Label { text: "Username"; color: nord4 }
       TextField {
         id: userField
         placeholderText: "Username"
@@ -64,8 +83,10 @@ Rectangle {
         selectionColor: nord3
         background: Rectangle { color: nord0; radius: 6; border.color: nord2 }
         text: sddm.lastUser || ""
+        Keys.onReturnPressed: passField.focus = true
       }
 
+      Label { text: "Password"; color: nord4 }
       TextField {
         id: passField
         placeholderText: "Password"
@@ -74,23 +95,57 @@ Rectangle {
         color: nord6
         selectionColor: nord3
         background: Rectangle { color: nord0; radius: 6; border.color: nord2 }
+        Keys.onReturnPressed: loginBtn.clicked()
       }
 
       Row {
         spacing: 12
+        // Session selector (bspwm/i3/etc.) from /usr/share/xsessions
+        Column {
+          spacing: 6
+          Label { text: "Session"; color: nord4 }
+          ComboBox {
+            id: sessionCombo
+            model: xsessions
+            textRole: "fileName"
+            width: 220
+            onActivated: {
+              var fname = xsessions.get(index).fileName
+              selectedSession = fname.replace(".desktop", "")
+            }
+          }
+        }
         Button {
           id: loginBtn
           text: "Login"
-          contentItem: Label { text: loginBtn.text; color: nord0; font.bold: true }
-          background: Rectangle { radius: 6; color: nord8; border.color: nord10 }
+          contentItem: Label { text: loginBtn.text; color: nord6; font.bold: true }
+          background: Rectangle { radius: 6; color: accentRed; border.color: nord9 }
           onClicked: {
-            var sessionName = defaultSession
-            sddm.login(userField.text, passField.text, sessionName)
+            sddm.login(userField.text, passField.text, selectedSession)
           }
         }
       }
 
       // No extra controls: minimal UI
+    }
+  }
+
+  // List available X sessions from desktop files
+  FolderListModel {
+    id: xsessions
+    folder: "/usr/share/xsessions"
+    nameFilters: ["*.desktop"]
+    showDirs: false
+    onCountChanged: {
+      // Preselect default session if present
+      for (var i = 0; i < count; i++) {
+        var fn = xsessions.get(i).fileName
+        if (fn === defaultSession + ".desktop") {
+          sessionCombo.currentIndex = i
+          selectedSession = defaultSession
+          break
+        }
+      }
     }
   }
 
