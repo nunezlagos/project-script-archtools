@@ -114,8 +114,16 @@ deploy_theme(){
   chosen="$(resolve_wallpaper "$1")"
   if [[ -n "$chosen" ]]; then
     case "$chosen" in
-      *.png) cp "$chosen" "$THEME_DEST_DIR/assets/bg.png" ; log "Login background applied (PNG: $(basename "$chosen"))" ;;
-      *.jpg|*.jpeg) cp "$chosen" "$THEME_DEST_DIR/assets/bg.jpg" ; log "Login background applied (JPG: $(basename "$chosen"))" ;;
+      *.png)
+        cp "$chosen" "$THEME_DEST_DIR/assets/bg.png"
+        cp "$chosen" "$THEME_DEST_DIR/assets/login.png"
+        log "Login background applied (PNG: $(basename "$chosen")) as bg.png and login.png"
+        ;;
+      *.jpg|*.jpeg)
+        cp "$chosen" "$THEME_DEST_DIR/assets/bg.jpg"
+        cp "$chosen" "$THEME_DEST_DIR/assets/login.jpg"
+        log "Login background applied (JPG: $(basename "$chosen")) as bg.jpg and login.jpg"
+        ;;
     esac
   else
     log "No wallpaper found in $PROJECT_ROOT/wallpaper (png/jpg)"

@@ -17,24 +17,31 @@ Rectangle {
   property string defaultSession: "bspwm"
   property string selectedSession: defaultSession
 
-  // Background: try PNG, fallback to JPG
+  // Background: prefer login.png, fallbacks to bg.png then bg.jpg
+  Image {
+    id: bglgn
+    anchors.fill: parent
+    source: "assets/login.png"
+    fillMode: Image.PreserveAspectCrop
+  }
   Image {
     id: bgpng
     anchors.fill: parent
     source: "assets/bg.png"
     fillMode: Image.PreserveAspectCrop
+    visible: bglgn.status !== Image.Ready
   }
   Image {
     id: bgjpg
     anchors.fill: parent
     source: "assets/bg.jpg"
     fillMode: Image.PreserveAspectCrop
-    visible: bgpng.status !== Image.Ready
+    visible: bglgn.status !== Image.Ready && bgpng.status !== Image.Ready
   }
   // Overlay para mejorar el contraste
   Rectangle {
     anchors.fill: parent
-    color: Qt.rgba(0,0,0,0.90)
+    color: Qt.rgba(0,0,0,0.60)
   }
   Rectangle {
     // Explicit fallback if both images fail to load
