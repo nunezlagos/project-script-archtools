@@ -45,7 +45,7 @@ install_sddm_dependencies(){
   log "Installing greeter dependencies (Qt Declarative/Controls, SVG, X11)"
   if command -v pacman >/dev/null 2>&1; then
     # Qt6 modules commonly required by SDDM themes using Controls 2
-    pacman -S --needed --noconfirm qt6-declarative qt6-svg || true
+    pacman -S --needed --noconfirm qt6-declarative qt6-quickcontrols2 qt6-graphicaleffects qt6-svg || true
     # X11 server components to guarantee X sessions
     pacman -S --needed --noconfirm xorg-server xorg-xauth || true
     # Back-compat: if Qt5 controls are available, install them too (harmless if unused)
@@ -54,6 +54,19 @@ install_sddm_dependencies(){
     fi
   else
     log "pacman not available; skipping dependency installation"
+  fi
+}
+
+# Guard to handle pacman lock file if previous run crashed
+ensure_pacman_ready(){
+  if [[ -f /var/lib/pacman/db.lck ]]; then
+    if pgrep -x pacman >/dev/null 2>&1; then
+      log "pacman is running; waiting for it to finish..."
+      sleep 5
+    else
+      log "Found stale pacman lock; removing /var/lib/pacman/db.lck"
+      rm -f /var/lib/pacman/db.lck
+    fi
   fi
 }
 
@@ -173,6 +186,7 @@ enable_sddm(){
 
 main(){
   require_root
+  ensure_pacman_ready
   disable_and_remove_others
   install_sddm
   install_sddm_dependencies
