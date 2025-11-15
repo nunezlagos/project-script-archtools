@@ -30,6 +30,18 @@ Rectangle {
     color: Qt.rgba(0,0,0,0.50)
   }
 
+  // Firma pequeña arriba a la derecha
+  Text {
+    id: creditTag
+    text: "Designed by nunezlagos"
+    color: textMuted
+    font.pixelSize: 12
+    opacity: 0.75
+    anchors.top: parent.top
+    anchors.right: parent.right
+    anchors.margins: 12
+  }
+
     // Sombra exterior eliminada
 
     Rectangle {
@@ -162,9 +174,11 @@ Rectangle {
     contentItem: ListView {
       clip: true
       model: xsessions
+      implicitHeight: Math.min(xsessions.count, 8) * 34
       delegate: ItemDelegate {
         width: sessionPopup.width - 16
-        text: model.fileName.replace(".desktop", "")
+        implicitHeight: 32
+        text: fileName.replace(".desktop", "")
         onClicked: { selectedSession = text; sessionPopup.close(); }
       }
     }
