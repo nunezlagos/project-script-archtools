@@ -40,6 +40,23 @@ install_sddm(){
   pacman -S --needed --noconfirm sddm || { log "Failed installing sddm"; exit 1; }
 }
 
+# Ensure Qt/QML controls and SVG plugins are present for the greeter
+install_sddm_dependencies(){
+  log "Installing greeter dependencies (Qt Declarative/Controls, SVG, X11)"
+  if command -v pacman >/dev/null 2>&1; then
+    # Qt6 modules commonly required by SDDM themes using Controls 2
+    pacman -S --needed --noconfirm qt6-declarative qt6-svg || true
+    # X11 server components to guarantee X sessions
+    pacman -S --needed --noconfirm xorg-server xorg-xauth || true
+    # Back-compat: if Qt5 controls are available, install them too (harmless if unused)
+    if pacman -Si qt5-quickcontrols2 >/dev/null 2>&1; then
+      pacman -S --needed --noconfirm qt5-quickcontrols2 qt5-svg || true
+    fi
+  else
+    log "pacman not available; skipping dependency installation"
+  fi
+}
+
 deploy_theme(){
   if [[ ! -d "$THEME_SRC_DIR" ]]; then
     log "Theme source not found: $THEME_SRC_DIR (skipping theme deployment)"; return 0
@@ -129,6 +146,7 @@ main(){
   require_root
   disable_and_remove_others
   install_sddm
+  install_sddm_dependencies
   deploy_theme
   deploy_config
   enforce_main_conf
