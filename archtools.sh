@@ -344,11 +344,12 @@ main(){
   ensure_login_services
   fix_login_loop
   # Install and enforce SDDM after dotfiles are installed
-  if [[ -x "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" ]]; then
-    sudo bash "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" >>"$LOG_FILE" 2>&1 || warn "SDDM installation reported issues"
+  SDDM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/sddm.sh"
+  if [[ -f "$SDDM_SCRIPT" ]]; then
+    sudo bash "$SDDM_SCRIPT" >>"$LOG_FILE" 2>&1 || warn "SDDM installation reported issues"
     progress_step "SDDM installed"
   else
-    warn "SDDM script not found at home/intalation_scripts/sddm.sh"
+    warn "SDDM script not found at $SDDM_SCRIPT"
   fi
   reinstall_firefox_clean
   # (LightDM eliminado)
