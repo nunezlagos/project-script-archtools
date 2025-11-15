@@ -1,0 +1,19 @@
+# Actualiza la configuración de Polybar desde este repo y reinicia la barra
+
+# 1) Posiciónate en la carpeta del proyecto en tu máquina Linux
+cd "$HOME/Personal/project-script-archtools" || exit 1
+
+# 2) Copia los archivos de Polybar al directorio de configuración del usuario
+mkdir -p "$HOME/.config/polybar"
+cp -r home/polybar/* "$HOME/.config/polybar/"
+
+# 3) Asegura permisos de ejecución para scripts
+chmod +x "$HOME/.config/polybar/launch.sh" || true
+chmod +x "$HOME/.config/polybar/scripts"/*.sh || true
+
+# 4) Recarga Polybar de forma segura
+polybar-msg cmd quit
+~/.config/polybar/launch.sh
+
+# Si polybar-msg no está disponible, usa:
+# killall -q polybar; while pgrep -u "$USER" -x polybar >/dev/null; do sleep 1; done; ~/.config/polybar/launch.sh
