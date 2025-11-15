@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# ArchTools - Setup mínimo para BSPWM (sin Zsh/OMZ, sin Neovim, sin GPU/VM)
+# ArchTools - Minimal setup for BSPWM (no Zsh/OMZ, no Neovim, no GPU/VM)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 USER_NAME=${SUDO_USER:-$USER}
@@ -35,7 +35,7 @@ check_internet(){
   if ping -c 1 archlinux.org &>/dev/null; then
     ok "Internet OK"
   else
-    err "Sin internet"; exit 1
+    err "No internet"; exit 1
   fi
 }
 
@@ -51,16 +51,16 @@ packages=(
 )
 
 install_packages(){
-  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || { err "Fallo al actualizar paquetes"; exit 1; }
-  run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet "${packages[@]}" || warn "Algún paquete no se instaló"
-  progress_step "Paquetes instalados"
+  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || { err "Failed to update packages"; exit 1; }
+  run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet "${packages[@]}" || warn "Some packages were not installed"
+  progress_step "Packages installed"
 }
 
 # (eliminado) Verificación específica de LightDM
 
 
 ensure_dirs(){
-  mkdir -p "$CONFIG_DIR" && ok "Directorio base: $CONFIG_DIR"
+  mkdir -p "$CONFIG_DIR" && ok "Base directory: $CONFIG_DIR"
   for d in bspwm sxhkd polybar polybar/scripts picom dunst kitty fish wallpaper rofi; do
     mkdir -p "$CONFIG_DIR/$d"
   done
@@ -96,7 +96,7 @@ EOF
     chmod +x "$f"
     : # silencioso
   done
-  progress_step "Sesión BSPWM configurada"
+  progress_step "BSPWM session configured"
   # Entrada de sesión de XSession (para gestores de inicio que la respeten)
   local desktop="/usr/share/xsessions/bspwm.desktop"
   if [[ ! -f "$desktop" ]]; then
@@ -108,7 +108,7 @@ Exec=/usr/local/bin/start-bspwm-session
 TryExec=/usr/local/bin/start-bspwm-session
 Type=XSession
 EOF
-    ok "Sesión BSPWM registrada"
+    ok "BSPWM session registered"
   fi
 }
 
@@ -121,17 +121,17 @@ fix_login_loop(){
     sudo chown "$USER_NAME:$USER_NAME" "$xa" 2>/dev/null || true
     chmod 600 "$xa" 2>/dev/null || true
   fi
-  progress_step "Login loop evitado (permisos y sesión)"
+  progress_step "Login loop avoided (permissions and session)"
 }
 
 backup_if_exists(){
   local path="$1"; [ -e "$path" ] || return 0
   mkdir -p "$BACKUP_DIR"; cp -r "$path" "$BACKUP_DIR/" 2>/dev/null || true
-  warn "Respaldo: $BACKUP_DIR/$(basename "$path")"
+  warn "Backup: $BACKUP_DIR/$(basename "$path")"
 }
 
 copy_configs(){
-  ok "Copiando configuraciones"
+  ok "Copying configurations"
   declare -A MAP=(
     ["$SCRIPT_DIR/bspwm/bspwmrc"]="$CONFIG_DIR/bspwm/bspwmrc"
     ["$SCRIPT_DIR/sxhkd/sxhkdrc"]="$CONFIG_DIR/sxhkd/sxhkdrc"
@@ -161,7 +161,7 @@ copy_configs(){
   chmod +x "$CONFIG_DIR/bspwm/bspwmrc" "$CONFIG_DIR/polybar/launch.sh" 2>/dev/null || true
   # Asegurar permisos de ejecución para scripts usados por Polybar
   chmod +x "$CONFIG_DIR/polybar/scripts"/*.sh 2>/dev/null || true
-  progress_step "Configuraciones aplicadas (limpio)"
+  progress_step "Configs applied (clean)"
 }
 
 configure_gtk_dark(){
@@ -178,7 +178,7 @@ gtk-application-prefer-dark-theme=1
 gtk-theme-name=Adwaita-dark
 EOF
   chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR/gtk-3.0" "$CONFIG_DIR/gtk-4.0" 2>/dev/null || true
-  progress_step "GTK dark configurado"
+  progress_step "GTK dark configured"
 }
 
 # (eliminado) Configuración del greeter de LightDM
@@ -215,27 +215,27 @@ reinstall_firefox_clean(){
   # Reinstalar Firefox estable vía pacman
   if command -v pacman >/dev/null 2>&1; then
     run_quiet sudo pacman -S --noconfirm --noprogressbar --quiet firefox || {
-      warn "No se pudo reinstalar Firefox con pacman"
+      warn "Could not reinstall Firefox with pacman"
       return 0
     }
-    progress_step "Firefox reinstalado"
+    progress_step "Firefox reinstalled"
   else
-    warn "Gestor pacman no disponible; omito reinstalación de Firefox"
+    warn "Pacman not available; skipping Firefox reinstall"
   fi
 }
 
 install_yay(){
   if command -v yay >/dev/null 2>&1; then
-    progress_step "yay ya instalado"
+    progress_step "yay already installed"
     return 0
   fi
-  run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet git base-devel || { err "No se pudo instalar git/base-devel"; return 1; }
+  run_quiet sudo pacman -S --needed --noconfirm --noprogressbar --quiet git base-devel || { err "Failed to install git/base-devel"; return 1; }
   local tmpdir="/tmp/yay_install"
   run_quiet rm -rf "$tmpdir" && mkdir -p "$tmpdir"
   chown "$USER_NAME":"$USER_NAME" "$tmpdir" 2>/dev/null || true
-  sudo -u "$USER_NAME" bash -c "cd '$tmpdir' && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm" >>"$LOG_FILE" 2>&1 || { err "Fallo instalando yay"; return 1; }
+  sudo -u "$USER_NAME" bash -c "cd '$tmpdir' && git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si --noconfirm" >>"$LOG_FILE" 2>&1 || { err "Failed installing yay"; return 1; }
   run_quiet rm -rf "$tmpdir" || true
-  progress_step "yay instalado"
+  progress_step "yay installed"
 }
 
 disable_conflicting_services(){
@@ -243,7 +243,7 @@ disable_conflicting_services(){
     if systemctl list-unit-files | grep -q "^${svc}.service"; then
       sudo systemctl disable "$svc" >/dev/null 2>&1 || true
       sudo systemctl stop "$svc" >/dev/null 2>&1 || true
-      warn "Servicio potencialmente conflictivo deshabilitado: $svc"
+      warn "Potentially conflicting service disabled: $svc"
     fi
   done
 }
@@ -258,16 +258,16 @@ ensure_login_services(){
   if systemctl list-unit-files | grep -q '^polkit.service'; then
     sudo systemctl start polkit >/dev/null 2>&1 || true
   fi
-  progress_step "Servicios de login iniciados"
+  progress_step "Login services started"
 }
 
 enable_networkmanager(){
   if systemctl list-unit-files | grep -q '^NetworkManager.service'; then
-    sudo systemctl enable NetworkManager >/dev/null 2>&1 || warn "No se pudo habilitar NetworkManager"
+    sudo systemctl enable NetworkManager >/dev/null 2>&1 || warn "Failed to enable NetworkManager"
     sudo systemctl start NetworkManager >/dev/null 2>&1 || true
-    progress_step "NetworkManager habilitado"
+    progress_step "NetworkManager enabled"
   else
-    warn "NetworkManager no disponible (paquete no instalado?)"
+    warn "NetworkManager not available (package not installed?)"
   fi
 }
 
@@ -277,52 +277,52 @@ write_command_list(){
     cp "$SCRIPT_DIR/command-list" "$HOME_DIR/command-list" >/dev/null 2>&1
   else
     sudo tee /command-list >/dev/null <<'EOF'
-# Command List (resumen para Kitty)
+# Command List (Kitty quick reference)
 
-## Lanzadores
-- rofi: `rofi -show drun` (apps) | `rofi -show run` (comandos)
+## Launchers
+- rofi: `rofi -show drun` (apps) | `rofi -show run` (commands)
 - terminal: `kitty`
-- navegador: `firefox`
+- browser: `firefox`
 
-## Gestión del sistema
+## System
 - audio: `pavucontrol`
-- red: `nm-applet` (tray) | `nm-connection-editor`
-- dispositivos: `udiskie --tray` | `udisksctl`
+- network: `nm-applet` (tray) | `nm-connection-editor`
+- devices: `udiskie --tray` | `udisksctl`
 
-## BSPWM / ventanas
-- reiniciar WM: `bspc wm -r`
-- mover foco: `bspc node -f {north|south|east|west}`
-- mover ventana: `bspc node -v <dx> <dy>`
-- alternar estado: `bspc node -t {tiled|floating|fullscreen}`
+## BSPWM / Windows
+- restart WM: `bspc wm -r`
+- focus move: `bspc node -f {north|south|east|west}`
+- move window: `bspc node -v <dx> <dy>`
+- toggle state: `bspc node -t {tiled|floating|fullscreen}`
 
-## Barras y notificaciones
+## Bars and notifications
 - polybar: `~/.config/polybar/launch.sh`
-- picom: `picom --config ~/.config/picom/picom.conf`
-- dunst: `dunst`
+- compositor: `picom --config ~/.config/picom/picom.conf`
+- notifications: `dunst`
 
-## Fondos de pantalla
-- `feh --bg-fill ~/.config/wallpaper/<imagen>`
+## Wallpaper
+- `feh --bg-fill ~/.config/wallpaper/<image>`
 
-## Configuración
-- refrescar configs: `tools/refresh-config.sh <componente|all>`
-- componentes típicos: `bspwm sxhkd polybar picom dunst kitty rofi wallpaper`
+## Config
+- refresh configs: `tools/refresh-config.sh <component|all>`
+- typical components: `bspwm sxhkd polybar picom dunst kitty rofi wallpaper`
 
-## Servicios
-- activar red: `sudo systemctl enable NetworkManager && sudo systemctl start NetworkManager`
+## Services
+- enable network: `sudo systemctl enable NetworkManager && sudo systemctl start NetworkManager`
 
 EOF
     cp /command-list "$HOME_DIR/command-list" 2>/dev/null || true
   fi
-  progress_step "Command list escrita"
+  progress_step "Command list written"
 }
 
 final_tips(){
-  progress_step "Instalación completa"
-  echo "Log detallado: $LOG_FILE"
+  progress_step "Installation complete"
+  echo "Detailed log: $LOG_FILE"
 }
 
 reboot_system(){
-  progress_step "Reiniciando sistema"
+  progress_step "Rebooting system"
   sudo systemctl reboot >/dev/null 2>&1 || systemctl reboot >/dev/null 2>&1 || sudo reboot >/dev/null 2>&1 || reboot >/dev/null 2>&1 || true
 }
 
@@ -331,12 +331,12 @@ main(){
   check_internet
   progress_step "Internet OK"
   disable_conflicting_services
-  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Actualización previa con pacman falló"
-  progress_step "Sistema actualizado"
+  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Pre-update with pacman failed"
+  progress_step "System updated"
   install_packages
   # (LightDM eliminado)
-  install_yay || warn "yay no se pudo instalar"
-  ensure_dirs; progress_step "Directorios preparados"
+  install_yay || warn "yay could not be installed"
+  ensure_dirs; progress_step "Directories prepared"
   ensure_bspwm_session
   copy_configs
   configure_gtk_dark
@@ -348,18 +348,18 @@ main(){
   enable_networkmanager
   # Instalar y configurar login SDDM
   if [[ -x "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" ]]; then
-    sudo bash "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" >>"$LOG_FILE" 2>&1 || warn "Instalación de SDDM reportó problemas"
-    progress_step "SDDM instalado"
+    sudo bash "$SCRIPT_DIR/home/intalation_scripts/sddm.sh" >>"$LOG_FILE" 2>&1 || warn "SDDM installation reported issues"
+    progress_step "SDDM installed"
   else
-    warn "Script SDDM no encontrado en home/intalation_scripts/sddm.sh"
+    warn "SDDM script not found at home/intalation_scripts/sddm.sh"
   fi
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
-  progress_step "Permisos configurados"
+  progress_step "Permissions set"
   write_command_list
-  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Actualización final con pacman falló"
+  run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet || warn "Final pacman upgrade failed"
   if command -v yay >/dev/null 2>&1; then
     yay -Syu --noconfirm --cleanafter --noredownload >>"$LOG_FILE" 2>&1 || true
-    progress_step "AUR actualizado"
+    progress_step "AUR updated"
   fi
   final_tips
   reboot_system
