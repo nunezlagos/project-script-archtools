@@ -17,7 +17,7 @@ err(){ echo -e "${RED}[✗]${NC} $1"; }
 # Minimal output and progress
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=26
+TOTAL_STEPS=27
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -108,6 +108,18 @@ verify_fish(){ [[ -f "$CONFIG_DIR/fish/config.fish" ]]; }
 verify_rofi(){ [[ -f "$CONFIG_DIR/rofi/config.rasi" ]]; }
 verify_wallpaper(){ [[ -d "$SCRIPT_DIR/wallpaper" ]] && ls -1 "$SCRIPT_DIR/wallpaper"/* >/dev/null 2>&1; }
 verify_polybar(){ [[ -f "$CONFIG_DIR/polybar/launch.sh" ]] || [[ -f "$CONFIG_DIR/polybar/current.ini" ]]; }
+verify_virtualbox(){
+  # Éxito si no es VirtualBox, o si el servicio/módulos están presentes
+  local virt
+  virt=$(systemd-detect-virt 2>/dev/null || true)
+  if [[ "$virt" != "oracle" && "$virt" != "vbox" ]]; then
+    return 0
+  fi
+  systemctl is-enabled vboxservice >/dev/null 2>&1 && return 0
+  systemctl is-active vboxservice >/dev/null 2>&1 && return 0
+  lsmod | grep -q "vboxguest" && return 0
+  return 1
+}
 verify_gtk_dark(){ [[ -f "$HOME_DIR/.config/gtk-3.0/settings.ini" ]] && grep -q "gtk-application-prefer-dark-theme=1" "$HOME_DIR/.config/gtk-3.0/settings.ini"; }
 verify_login_services(){ systemctl is-active systemd-logind >/dev/null 2>&1; }
 verify_fix_login_loop(){ [[ -f "/usr/share/xsessions/bspwm.desktop" ]] && [[ -x "/usr/local/bin/start-bspwm-session" || -x "/usr/bin/start-bspwm-session" ]]; }
@@ -278,6 +290,8 @@ main(){
   run_and_verify "SDDM installed" "$SDDM_SCRIPT" verify_sddm
   reinstall_firefox_clean
   run_and_verify "NetworkManager enabled" "$SCRIPT_DIR/home/intalation_scripts/config_networkmanager.sh" verify_networkmanager
+  # VirtualBox guest additions (solo si se detecta VirtualBox)
+  run_and_verify "VirtualBox guest additions" "$SCRIPT_DIR/home/intalation_scripts/config_virtualbox.sh" verify_virtualbox
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
   progress_mark ok "Config ownership set"
   if bash "$SCRIPT_DIR/home/intalation_scripts/config_command_list.sh" >>"$LOG_FILE" 2>&1; then
