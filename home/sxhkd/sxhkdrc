@@ -86,9 +86,46 @@ super + {o,i}
 	bspc node {older,newer} -f; \
 	bspc wm -h on
 
-# go to workspace (create missing sequence up to N)
-super + {1-8}
-    ~/.config/bspwm/scripts/ws_goto.sh {1-8}
+# go to workspace (create sequence up to N) and enable long-press delete
+super + 1
+    ~/.config/bspwm/scripts/ws_hold.sh 1 press & ~/.config/bspwm/scripts/ws_goto.sh 1
+super + @1
+    ~/.config/bspwm/scripts/ws_hold.sh 1 release
+
+super + 2
+    ~/.config/bspwm/scripts/ws_hold.sh 2 press & ~/.config/bspwm/scripts/ws_goto.sh 2
+super + @2
+    ~/.config/bspwm/scripts/ws_hold.sh 2 release
+
+super + 3
+    ~/.config/bspwm/scripts/ws_hold.sh 3 press & ~/.config/bspwm/scripts/ws_goto.sh 3
+super + @3
+    ~/.config/bspwm/scripts/ws_hold.sh 3 release
+
+super + 4
+    ~/.config/bspwm/scripts/ws_hold.sh 4 press & ~/.config/bspwm/scripts/ws_goto.sh 4
+super + @4
+    ~/.config/bspwm/scripts/ws_hold.sh 4 release
+
+super + 5
+    ~/.config/bspwm/scripts/ws_hold.sh 5 press & ~/.config/bspwm/scripts/ws_goto.sh 5
+super + @5
+    ~/.config/bspwm/scripts/ws_hold.sh 5 release
+
+super + 6
+    ~/.config/bspwm/scripts/ws_hold.sh 6 press & ~/.config/bspwm/scripts/ws_goto.sh 6
+super + @6
+    ~/.config/bspwm/scripts/ws_hold.sh 6 release
+
+super + 7
+    ~/.config/bspwm/scripts/ws_hold.sh 7 press & ~/.config/bspwm/scripts/ws_goto.sh 7
+super + @7
+    ~/.config/bspwm/scripts/ws_hold.sh 7 release
+
+super + 8
+    ~/.config/bspwm/scripts/ws_hold.sh 8 press & ~/.config/bspwm/scripts/ws_goto.sh 8
+super + @8
+    ~/.config/bspwm/scripts/ws_hold.sh 8 release
 
 ## removed: create workspace via polybar '+'
 
