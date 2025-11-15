@@ -34,7 +34,7 @@ Rectangle {
     Rectangle {
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.verticalCenter: parent.verticalCenter
-      width: 540; height: 340
+      width: panel.width + 20; height: panel.height + 20
       radius: 5
       color: "#000000"
       opacity: 0.25
@@ -42,18 +42,22 @@ Rectangle {
 
     Rectangle {
     id: panel
-    width: 520; height: 320
+    width: 400; height: 200
     radius: 5
     color: panelDark
-    opacity: 0.94
+    opacity: 0.90
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.verticalCenter: parent.verticalCenter
-    border.color: borderLight; border.width: 1
+    border.width: 0
+    gradient: Gradient {
+      GradientStop { position: 0.0; color: panelDark }
+      GradientStop { position: 1.0; color: "#141619" }
+    }
 
     Column {
       anchors.fill: parent
-      anchors.margins: 28
-      spacing: 16
+      anchors.margins: 8
+      spacing: 6
 
       Label { text: "Username"; color: textMuted }
       TextField {
@@ -61,6 +65,8 @@ Rectangle {
         placeholderText: "Username"
         font.pixelSize: 16
         color: textLight
+        width: 180; height: 32
+        anchors.horizontalCenter: parent.horizontalCenter
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         selectionColor: Qt.rgba(1,1,1,0.25)
@@ -76,6 +82,8 @@ Rectangle {
         echoMode: TextInput.Password
         font.pixelSize: 16
         color: textLight
+        width: 180; height: 32
+        anchors.horizontalCenter: parent.horizontalCenter
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         selectionColor: Qt.rgba(1,1,1,0.25)
@@ -83,25 +91,21 @@ Rectangle {
         Keys.onReturnPressed: sddm.login(userField.text, passField.text, selectedSession)
       }
 
-  Item {
-    width: parent.width
-    height: 48
-    Button {
-          id: loginBtn
-          anchors.horizontalCenter: parent.horizontalCenter
-          width: panel.width * 0.5
-          text: "Login"
-          contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
-          background: Rectangle {
-            radius: 5
-            color: Qt.rgba(1,1,1,0.12)
-            border.color: borderLight
-          }
-          onClicked: {
-            sddm.login(userField.text, passField.text, selectedSession)
-          }
-    }
-  }
+      Button {
+        id: loginBtn
+        width: 100; height: 32
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: "Login"
+        contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
+        background: Rectangle {
+          radius: 5
+          color: Qt.rgba(1,1,1,0.12)
+          border.color: borderLight
+        }
+        onClicked: {
+          sddm.login(userField.text, passField.text, selectedSession)
+        }
+      }
 
       // No extra controls: minimal UI
     }
@@ -166,7 +170,7 @@ Rectangle {
   // List available X sessions from desktop files
   FolderListModel {
     id: xsessions
-    folder: "/usr/share/xsessions"
+    folder: "file:///usr/share/xsessions"
     nameFilters: ["*.desktop"]
     showDirs: false
     onCountChanged: {
