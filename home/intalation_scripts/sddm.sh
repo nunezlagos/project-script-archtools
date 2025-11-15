@@ -58,7 +58,19 @@ deploy_theme(){
     cp "$login_jpg" "$THEME_DEST_DIR/assets/bg.jpg"
     log "Login background applied (JPG)"
   else
-    log "No login wallpaper found (login.png/login.jpg) in $PROJECT_ROOT/wallpaper"
+    # Fallback: pick the first image found in wallpaper directory
+    local fallback=""
+    for f in "$PROJECT_ROOT/wallpaper"/*.png "$PROJECT_ROOT/wallpaper"/*.jpg; do
+      if [[ -f "$f" ]]; then fallback="$f"; break; fi
+    done
+    if [[ -n "$fallback" ]]; then
+      case "$fallback" in
+        *.png) cp "$fallback" "$THEME_DEST_DIR/assets/bg.png" ; log "Login background applied (fallback PNG: $(basename "$fallback"))" ;;
+        *.jpg) cp "$fallback" "$THEME_DEST_DIR/assets/bg.jpg" ; log "Login background applied (fallback JPG: $(basename "$fallback"))" ;;
+      esac
+    else
+      log "No wallpaper found in $PROJECT_ROOT/wallpaper (login.png/login.jpg or any .png/.jpg)"
+    fi
   fi
   # Adjust metadata to reflect the fork
   if [[ -f "$THEME_DEST_DIR/metadata.desktop" ]]; then
