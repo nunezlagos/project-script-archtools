@@ -5,7 +5,8 @@ vmware-user-suid-wrapper &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
 
-bspc monitor -d 1 2 3 4 5 6 7 
+# Inicia con máximo 3 escritorios
+bspc monitor -d 1 2 3
 bspc config border_width         1
 bspc config window_gap         	12
 
@@ -60,6 +61,9 @@ dunst &
 # Tray apps (se inician siempre)
 # NetworkManager applet
 nm-applet &
+# Desactivar autorepetición para teclas numéricas 1..8 (mejora "mantener" en sxhkd)
+# Nota: afecta repetición de dígitos globalmente; quita estas líneas si no te conviene.
+xset -r 10 11 12 13 14 15 16 17 &
 # Autostart de comunicaciones en workspace siguiente
 ~/.config/bspwm/scripts/autostart_comm.sh &
 # Udiskie (automount) en bandeja — DESACTIVADO
