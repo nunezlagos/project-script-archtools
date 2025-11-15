@@ -46,7 +46,7 @@ Rectangle {
 
     Rectangle {
     id: panel
-    width: 400; height: 180
+    width: 400; height: 160
     radius: 5
     color: panelDark
     opacity: 0.80
