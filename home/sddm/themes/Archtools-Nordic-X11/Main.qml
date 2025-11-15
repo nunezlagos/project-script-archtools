@@ -179,8 +179,21 @@ Rectangle {
       delegate: ItemDelegate {
         width: sessionPopup.width - 16
         implicitHeight: 32
-        text: fileName.replace(".desktop", "")
-        onClicked: { selectedSession = text; sessionPopup.close(); }
+        hoverEnabled: true
+        property string displayName: fileName.replace(".desktop", "")
+        contentItem: Label {
+          text: displayName
+          color: textLight
+          horizontalAlignment: Text.AlignLeft
+          verticalAlignment: Text.AlignVCenter
+        }
+        background: Rectangle {
+          radius: 4
+          color: hovered ? Qt.rgba(255,255,255,0.08) : "transparent"
+          border.color: hovered ? Qt.rgba(255,255,255,0.18) : Qt.rgba(255,255,255,0.10)
+          border.width: 1
+        }
+        onClicked: { selectedSession = displayName; sessionPopup.close(); }
       }
     }
   }
