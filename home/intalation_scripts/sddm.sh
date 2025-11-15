@@ -84,8 +84,8 @@ resolve_wallpaper(){
       echo "$PROJECT_ROOT/wallpaper/$user_sel"; return 0
     fi
   fi
-  # Solo aceptamos login.png o login.jpg en $PROJECT_ROOT/wallpaper
-  for name in "login.png" "login.jpg"; do
+  # Solo aceptamos login.png en $PROJECT_ROOT/wallpaper
+  for name in "login.png"; do
     local path="$PROJECT_ROOT/wallpaper/$name"
     if [[ -f "$path" ]]; then echo "$path"; return 0; fi
   done
@@ -111,12 +111,11 @@ deploy_theme(){
         log "Login background applied (PNG: $(basename "$chosen"))"
         ;;
       *.jpg|*.jpeg)
-        cp "$chosen" "$THEME_DEST_DIR/assets/login.jpg"
-        log "Login background applied (JPG: $(basename "$chosen"))"
+        log "Formato no soportado: solo se admite PNG (login.png).";
         ;;
     esac
   else
-    log "No wallpaper found in $PROJECT_ROOT/wallpaper (png/jpg)"
+    log "No se encontró $PROJECT_ROOT/wallpaper/login.png"
   fi
   # Adjust metadata to reflect the fork
   if [[ -f "$THEME_DEST_DIR/metadata.desktop" ]]; then
@@ -133,8 +132,8 @@ deploy_theme(){
 validate_sddm_theme(){
   local issues=0
   [[ -f "$THEME_DEST_DIR/Main.qml" ]] || { log "Theme Main.qml missing at $THEME_DEST_DIR"; issues=1; }
-  if [[ ! -f "$THEME_DEST_DIR/assets/login.png" && ! -f "$THEME_DEST_DIR/assets/login.jpg" ]]; then
-    log "No background image found in $THEME_DEST_DIR/assets (login.png/login.jpg)"; issues=1
+  if [[ ! -f "$THEME_DEST_DIR/assets/login.png" ]]; then
+    log "No se encontró imagen de fondo en $THEME_DEST_DIR/assets (login.png)"; issues=1
   fi
   if ! command -v sddm-greeter >/dev/null 2>&1; then
     log "sddm-greeter not found (package sddm should provide it)"; issues=1

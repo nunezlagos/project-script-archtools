@@ -24,23 +24,10 @@ Rectangle {
     source: Qt.resolvedUrl("assets/login.png")
     fillMode: Image.PreserveAspectCrop
   }
-  Image {
-    id: bglgj
-    anchors.fill: parent
-    source: Qt.resolvedUrl("assets/login.jpg")
-    fillMode: Image.PreserveAspectCrop
-    visible: bglgn.status !== Image.Ready
-  }
   // Overlay para mejorar el contraste
   Rectangle {
     anchors.fill: parent
     color: Qt.rgba(0,0,0,0.50)
-  }
-  Rectangle {
-    // Explicit fallback if both images fail to load
-    anchors.fill: parent
-    color: bgDark
-    visible: bgpng.status !== Image.Ready && bgjpg.status !== Image.Ready
   }
 
     // Sombra suave detrás del panel (sin GraphicalEffects)
