@@ -84,18 +84,10 @@ resolve_wallpaper(){
       echo "$PROJECT_ROOT/wallpaper/$user_sel"; return 0
     fi
   fi
-  # Priority list (prefer requested anime image first)
-  local candidates=(
-    "onigirl.png" "login.png" "wallpaper_2.jpg" "bg.png" "wallhaven-96errx.jpg" "wallhaven-yx8vox.png" "login.jpg"
-  )
-  for name in "${candidates[@]}"; do
+  # Solo aceptamos login.png o login.jpg en $PROJECT_ROOT/wallpaper
+  for name in "login.png" "login.jpg"; do
     local path="$PROJECT_ROOT/wallpaper/$name"
     if [[ -f "$path" ]]; then echo "$path"; return 0; fi
-  done
-  # Generic fallback: first png/jpg in wallpaper dir
-  for f in "$PROJECT_ROOT/wallpaper"/*.png "$PROJECT_ROOT/wallpaper"/*.jpg; do
-    [[ -f "$f" ]] || continue
-    echo "$f"; return 0
   done
   echo ""; return 1
 }
@@ -115,14 +107,12 @@ deploy_theme(){
   if [[ -n "$chosen" ]]; then
     case "$chosen" in
       *.png)
-        cp "$chosen" "$THEME_DEST_DIR/assets/bg.png"
         cp "$chosen" "$THEME_DEST_DIR/assets/login.png"
-        log "Login background applied (PNG: $(basename "$chosen")) as bg.png and login.png"
+        log "Login background applied (PNG: $(basename "$chosen"))"
         ;;
       *.jpg|*.jpeg)
-        cp "$chosen" "$THEME_DEST_DIR/assets/bg.jpg"
         cp "$chosen" "$THEME_DEST_DIR/assets/login.jpg"
-        log "Login background applied (JPG: $(basename "$chosen")) as bg.jpg and login.jpg"
+        log "Login background applied (JPG: $(basename "$chosen"))"
         ;;
     esac
   else
@@ -143,8 +133,8 @@ deploy_theme(){
 validate_sddm_theme(){
   local issues=0
   [[ -f "$THEME_DEST_DIR/Main.qml" ]] || { log "Theme Main.qml missing at $THEME_DEST_DIR"; issues=1; }
-  if [[ ! -f "$THEME_DEST_DIR/assets/bg.png" && ! -f "$THEME_DEST_DIR/assets/bg.jpg" ]]; then
-    log "No background image found in $THEME_DEST_DIR/assets (bg.png/bg.jpg)"; issues=1
+  if [[ ! -f "$THEME_DEST_DIR/assets/login.png" && ! -f "$THEME_DEST_DIR/assets/login.jpg" ]]; then
+    log "No background image found in $THEME_DEST_DIR/assets (login.png/login.jpg)"; issues=1
   fi
   if ! command -v sddm-greeter >/dev/null 2>&1; then
     log "sddm-greeter not found (package sddm should provide it)"; issues=1

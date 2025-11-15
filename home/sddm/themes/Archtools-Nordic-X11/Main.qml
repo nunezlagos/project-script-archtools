@@ -15,33 +15,26 @@ Rectangle {
   color: bgDark
 
   property string defaultSession: "bspwm"
-  property string selectedSession: defaultSession
+  property string selectedSession: defaultSession   // display name (e.g., bspwm)
 
-  // Background: prefer login.png, fallbacks to bg.png then bg.jpg
+  // Background: prefer login.png, fallback to login.jpg
   Image {
     id: bglgn
     anchors.fill: parent
-    source: "assets/login.png"
+    source: Qt.resolvedUrl("assets/login.png")
     fillMode: Image.PreserveAspectCrop
   }
   Image {
-    id: bgpng
+    id: bglgj
     anchors.fill: parent
-    source: "assets/bg.png"
+    source: Qt.resolvedUrl("assets/login.jpg")
     fillMode: Image.PreserveAspectCrop
     visible: bglgn.status !== Image.Ready
-  }
-  Image {
-    id: bgjpg
-    anchors.fill: parent
-    source: "assets/bg.jpg"
-    fillMode: Image.PreserveAspectCrop
-    visible: bglgn.status !== Image.Ready && bgpng.status !== Image.Ready
   }
   // Overlay para mejorar el contraste
   Rectangle {
     anchors.fill: parent
-    color: Qt.rgba(0,0,0,0.60)
+    color: Qt.rgba(0,0,0,0.50)
   }
   Rectangle {
     // Explicit fallback if both images fail to load
@@ -103,10 +96,10 @@ Rectangle {
         Keys.onReturnPressed: sddm.login(userField.text, passField.text, selectedSession)
       }
 
-      Item {
-        width: parent.width
-        height: 48
-        Button {
+  Item {
+    width: parent.width
+    height: 48
+    Button {
           id: loginBtn
           anchors.horizontalCenter: parent.horizontalCenter
           width: panel.width * 0.5
@@ -120,8 +113,8 @@ Rectangle {
           onClicked: {
             sddm.login(userField.text, passField.text, selectedSession)
           }
-        }
-      }
+    }
+  }
 
       // No extra controls: minimal UI
     }
