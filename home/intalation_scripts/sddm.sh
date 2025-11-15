@@ -86,6 +86,33 @@ deploy_config(){
   fi
 }
 
+# Ensure main /etc/sddm.conf does not override our theme and X11 settings
+enforce_main_conf(){
+  local main_conf="/etc/sddm.conf"
+  # Theme section
+  if [[ -f "$main_conf" ]]; then
+    if grep -q '^\[Theme\]' "$main_conf"; then
+      sed -i -E "s/^Current=.*/Current=$THEME_NAME/" "$main_conf"
+    else
+      printf "\n[Theme]\nCurrent=%s\n" "$THEME_NAME" >> "$main_conf"
+    fi
+  else
+    printf "[Theme]\nCurrent=%s\n" "$THEME_NAME" > "$main_conf"
+  fi
+  # General section: force X11 display server
+  if grep -q '^\[General\]' "$main_conf"; then
+    if grep -q '^DisplayServer=' "$main_conf"; then
+      sed -i -E "s/^DisplayServer=.*/DisplayServer=x11/" "$main_conf"
+    else
+      awk 'BEGIN{printit=1} {print} END{print "DisplayServer=x11"}' "$main_conf" > "$main_conf.tmp" && mv "$main_conf.tmp" "$main_conf"
+    fi
+  else
+    printf "\n[General]\nDisplayServer=x11\n" >> "$main_conf"
+  fi
+  chmod 0644 "$main_conf"; chown root:root "$main_conf" 2>/dev/null || true
+  log "Main config enforced: theme=$THEME_NAME, DisplayServer=x11"
+}
+
 enable_sddm(){
   log "Enabling SDDM"
   systemctl enable sddm || log "Failed to enable SDDM"
@@ -99,6 +126,7 @@ main(){
   install_sddm
   deploy_theme
   deploy_config
+  enforce_main_conf
   enable_sddm
   log "SDDM installed and configured"
 }
