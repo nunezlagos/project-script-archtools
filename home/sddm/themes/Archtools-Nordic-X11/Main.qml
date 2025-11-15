@@ -49,7 +49,7 @@ Rectangle {
     Column {
       anchors.fill: parent
       anchors.margins: 8
-      spacing: 6
+      spacing: 12
       // Padding superior general
       Item { height: 30 }
 
@@ -93,10 +93,20 @@ Rectangle {
         width: 200; height: 32
         anchors.horizontalCenter: parent.horizontalCenter
         text: "Login"
-        contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
+        hoverEnabled: true
+        contentItem: Label {
+          anchors.fill: parent
+          text: loginBtn.text
+          color: textLight
+          font.bold: true
+          horizontalAlignment: Text.AlignHCenter
+          verticalAlignment: Text.AlignVCenter
+        }
         background: Rectangle {
           radius: 5
-          color: Qt.rgba(1,1,1,0.12)
+          color: loginBtn.pressed ? Qt.rgba(1,1,1,0.22)
+                : loginBtn.hovered ? Qt.rgba(1,1,1,0.18)
+                : Qt.rgba(1,1,1,0.12)
           border.color: borderLight
         }
         onClicked: {
