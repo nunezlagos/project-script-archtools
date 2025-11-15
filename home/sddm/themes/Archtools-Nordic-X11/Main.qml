@@ -1,7 +1,6 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
-import Sddm 1.3
+import QtQuick 2.0
+import QtQuick.Controls 2.0
+import Sddm 1.0
 
 Rectangle {
   id: root
@@ -35,6 +34,12 @@ Rectangle {
     source: "assets/bg.jpg"
     fillMode: Image.PreserveAspectCrop
     visible: bgpng.status !== Image.Ready
+  }
+  Rectangle {
+    // Explicit fallback if both images fail to load
+    anchors.fill: parent
+    color: nord0
+    visible: bgpng.status !== Image.Ready && bgjpg.status !== Image.Ready
   }
 
     Rectangle {

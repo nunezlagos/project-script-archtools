@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Archtools-Nordic-X11
-Comment=Fork basado en Nordic-darker, optimizado para Arch + bspwm (X11)
+Comment=Minimal Nordic-darker fork for Arch + bspwm (X11)
 Type=Service
 X-KDE-PluginInfo-Author=Archtools
 X-KDE-PluginInfo-Email=none
