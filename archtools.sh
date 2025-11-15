@@ -346,7 +346,14 @@ main(){
   # Install and enforce SDDM after dotfiles are installed
   SDDM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/sddm.sh"
   if [[ -f "$SDDM_SCRIPT" ]]; then
-    sudo bash "$SDDM_SCRIPT" >>"$LOG_FILE" 2>&1 || warn "SDDM installation reported issues"
+    if ! sudo bash "$SDDM_SCRIPT" >>"$LOG_FILE" 2>&1; then
+      err "SDDM reported issues. Aborting ArchTools script."
+      echo "----- Last 150 lines from $LOG_FILE -----"
+      tail -n 150 "$LOG_FILE" 2>/dev/null || true
+      echo "----- Recent SDDM journal -----"
+      journalctl -u sddm -n 100 --no-pager 2>/dev/null || true
+      exit 1
+    fi
     progress_step "SDDM installed"
   else
     warn "SDDM script not found at $SDDM_SCRIPT"

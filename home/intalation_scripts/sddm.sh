@@ -131,6 +131,29 @@ deploy_theme(){
   log "Theme copied to $THEME_DEST_DIR"
 }
 
+# Validate theme files and greeter ability to load them
+validate_sddm_theme(){
+  local issues=0
+  [[ -f "$THEME_DEST_DIR/Main.qml" ]] || { log "Theme Main.qml missing at $THEME_DEST_DIR"; issues=1; }
+  if [[ ! -f "$THEME_DEST_DIR/assets/bg.png" && ! -f "$THEME_DEST_DIR/assets/bg.jpg" ]]; then
+    log "No background image found in $THEME_DEST_DIR/assets (bg.png/bg.jpg)"; issues=1
+  fi
+  if ! command -v sddm-greeter >/dev/null 2>&1; then
+    log "sddm-greeter not found (package sddm should provide it)"; issues=1
+  else
+    # Run greeter in test mode to catch QML import errors without starting the DM
+    local out="/tmp/sddm-greeter-test.log"
+    if ! sddm-greeter --test-mode --theme "$THEME_DEST_DIR" >"$out" 2>&1; then
+      log "Greeter test failed. Relevant output:"; sed -n '1,200p' "$out" || true; issues=1
+      # Hint for common missing modules
+      if grep -qi "QtGraphicalEffects" "$out"; then log "Hint: install qt6-graphicaleffects"; fi
+      if grep -qi "QtQuick.Controls" "$out"; then log "Hint: install qt6-quickcontrols2"; fi
+      if grep -qi "module .* not installed" "$out"; then log "Hint: missing Qt module detected (see above)"; fi
+    fi
+  fi
+  return $issues
+}
+
 deploy_config(){
   log "Applying SDDM configuration from $CONF_SRC_DIR"
   local etc_conf_dir="/etc/sddm.conf.d"
@@ -191,6 +214,14 @@ main(){
   install_sddm
   install_sddm_dependencies
   deploy_theme
+  if ! validate_sddm_theme; then
+    log "SDDM validation failed; aborting installation."
+    # Show recent sddm journal if available
+    if command -v journalctl >/dev/null 2>&1; then
+      log "Recent SDDM logs:"; journalctl -u sddm -n 100 --no-pager 2>/dev/null || true
+    fi
+    exit 1
+  fi
   deploy_config
   enforce_main_conf
   enable_sddm
