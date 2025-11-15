@@ -33,12 +33,12 @@ Rectangle {
   // Overlay para mejorar el contraste
   Rectangle {
     anchors.fill: parent
-    color: Qt.rgba(0,0,0,0.30)
+    color: Qt.rgba(0,0,0,0.90)
   }
   Rectangle {
     // Explicit fallback if both images fail to load
     anchors.fill: parent
-    color: nord0
+    color: bgDark
     visible: bgpng.status !== Image.Ready && bgjpg.status !== Image.Ready
   }
 
@@ -73,8 +73,10 @@ Rectangle {
         placeholderText: "Username"
         font.pixelSize: 16
         color: textLight
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         selectionColor: Qt.rgba(1,1,1,0.25)
-        background: Rectangle { color: panelDark; radius: 5; border.color: borderLight }
+        background: Rectangle { color: panelDark; radius: 5; border.color: parent.activeFocus ? Qt.rgba(1,1,1,0.45) : borderLight }
         text: sddm.lastUser || ""
         Keys.onReturnPressed: passField.focus = true
       }
@@ -86,31 +88,20 @@ Rectangle {
         echoMode: TextInput.Password
         font.pixelSize: 16
         color: textLight
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         selectionColor: Qt.rgba(1,1,1,0.25)
-        background: Rectangle { color: panelDark; radius: 5; border.color: borderLight }
+        background: Rectangle { color: panelDark; radius: 5; border.color: parent.activeFocus ? Qt.rgba(1,1,1,0.45) : borderLight }
         Keys.onReturnPressed: loginBtn.clicked()
       }
 
-      Row {
-        spacing: 12
-        // Session selector (bspwm/i3/etc.) from /usr/share/xsessions
-        Column {
-          spacing: 6
-          Label { text: "Session"; color: textMuted }
-          ComboBox {
-            id: sessionCombo
-            model: xsessions
-            textRole: "fileName"
-            width: 220
-            background: Rectangle { color: Qt.rgba(1,1,1,0.08); radius: 5; border.color: borderLight }
-            onActivated: {
-              var fname = xsessions.get(index).fileName
-              selectedSession = fname.replace(".desktop", "")
-            }
-          }
-        }
+      Item {
+        width: parent.width
+        height: 48
         Button {
           id: loginBtn
+          anchors.horizontalCenter: parent.horizontalCenter
+          width: panel.width * 0.5
           text: "Login"
           contentItem: Label { text: loginBtn.text; color: textLight; font.bold: true }
           background: Rectangle {
@@ -128,6 +119,52 @@ Rectangle {
     }
   }
 
+  // Footer: hora/fecha y selector de sesión (icono engranaje)
+  Row {
+    id: footer
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    anchors.margins: 24
+    spacing: 12
+    Text {
+      id: clockText
+      color: textLight
+      font.pixelSize: 16
+      text: Qt.formatDateTime(new Date(), "HH:mm - dddd dd MMM")
+    }
+    Button {
+      id: sessionBtn
+      text: "⚙"
+      contentItem: Label { text: sessionBtn.text; color: textLight; font.bold: true }
+      background: Rectangle {
+        radius: 5
+        color: Qt.rgba(1,1,1,0.12)
+        border.color: borderLight
+      }
+      onClicked: sessionMenu.open()
+    }
+  }
+
+  Menu {
+    id: sessionMenu
+    Instantiator {
+      model: xsessions
+      delegate: MenuItem {
+        text: model.fileName.replace(".desktop","")
+        onTriggered: selectedSession = text
+      }
+      onObjectAdded: sessionMenu.insertItem(index, object)
+      onObjectRemoved: sessionMenu.removeItem(object)
+    }
+  }
+
+  Timer {
+    interval: 1000
+    running: true
+    repeat: true
+    onTriggered: clockText.text = Qt.formatDateTime(new Date(), "HH:mm - dddd dd MMM")
+  }
+
   // List available X sessions from desktop files
   FolderListModel {
     id: xsessions
@@ -139,7 +176,6 @@ Rectangle {
       for (var i = 0; i < count; i++) {
         var fn = xsessions.get(i).fileName
         if (fn === defaultSession + ".desktop") {
-          sessionCombo.currentIndex = i
           selectedSession = defaultSession
           break
         }

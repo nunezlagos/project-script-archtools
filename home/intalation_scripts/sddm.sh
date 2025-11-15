@@ -57,6 +57,36 @@ install_sddm_dependencies(){
   fi
 }
 
+resolve_wallpaper(){
+  # Optional explicit selection via first CLI arg or env var SDDM_WALLPAPER
+  local user_sel="${1:-}"
+  if [[ -z "$user_sel" && -n "${SDDM_WALLPAPER:-}" ]]; then
+    user_sel="$SDDM_WALLPAPER"
+  fi
+  if [[ -n "$user_sel" ]]; then
+    # Absolute/relative path or filename under $PROJECT_ROOT/wallpaper
+    if [[ -f "$user_sel" ]]; then
+      echo "$user_sel"; return 0
+    elif [[ -f "$PROJECT_ROOT/wallpaper/$user_sel" ]]; then
+      echo "$PROJECT_ROOT/wallpaper/$user_sel"; return 0
+    fi
+  fi
+  # Priority list (prefer requested anime image first)
+  local candidates=(
+    "onigirl.png" "login.png" "wallpaper_2.jpg" "bg.png" "wallhaven-96errx.jpg" "wallhaven-yx8vox.png" "login.jpg"
+  )
+  for name in "${candidates[@]}"; do
+    local path="$PROJECT_ROOT/wallpaper/$name"
+    if [[ -f "$path" ]]; then echo "$path"; return 0; fi
+  done
+  # Generic fallback: first png/jpg in wallpaper dir
+  for f in "$PROJECT_ROOT/wallpaper"/*.png "$PROJECT_ROOT/wallpaper"/*.jpg; do
+    [[ -f "$f" ]] || continue
+    echo "$f"; return 0
+  done
+  echo ""; return 1
+}
+
 deploy_theme(){
   if [[ ! -d "$THEME_SRC_DIR" ]]; then
     log "Theme source not found: $THEME_SRC_DIR (skipping theme deployment)"; return 0
@@ -66,28 +96,16 @@ deploy_theme(){
   cp -r "$THEME_SRC_DIR"/* "$THEME_DEST_DIR"/
   # If there is a login wallpaper in the repo, use it as background
   mkdir -p "$THEME_DEST_DIR/assets"
-  local login_png="$PROJECT_ROOT/wallpaper/login.png"
-  local login_jpg="$PROJECT_ROOT/wallpaper/login.jpg"
-  if [[ -f "$login_png" ]]; then
-    cp "$login_png" "$THEME_DEST_DIR/assets/bg.png"
-    log "Login background applied (PNG)"
-  elif [[ -f "$login_jpg" ]]; then
-    cp "$login_jpg" "$THEME_DEST_DIR/assets/bg.jpg"
-    log "Login background applied (JPG)"
+  # Resolve wallpaper (explicit arg/env or prioritized list)
+  local chosen
+  chosen="$(resolve_wallpaper "$1")"
+  if [[ -n "$chosen" ]]; then
+    case "$chosen" in
+      *.png) cp "$chosen" "$THEME_DEST_DIR/assets/bg.png" ; log "Login background applied (PNG: $(basename "$chosen"))" ;;
+      *.jpg|*.jpeg) cp "$chosen" "$THEME_DEST_DIR/assets/bg.jpg" ; log "Login background applied (JPG: $(basename "$chosen"))" ;;
+    esac
   else
-    # Fallback: pick the first image found in wallpaper directory
-    local fallback=""
-    for f in "$PROJECT_ROOT/wallpaper"/*.png "$PROJECT_ROOT/wallpaper"/*.jpg; do
-      if [[ -f "$f" ]]; then fallback="$f"; break; fi
-    done
-    if [[ -n "$fallback" ]]; then
-      case "$fallback" in
-        *.png) cp "$fallback" "$THEME_DEST_DIR/assets/bg.png" ; log "Login background applied (fallback PNG: $(basename "$fallback"))" ;;
-        *.jpg) cp "$fallback" "$THEME_DEST_DIR/assets/bg.jpg" ; log "Login background applied (fallback JPG: $(basename "$fallback"))" ;;
-      esac
-    else
-      log "No wallpaper found in $PROJECT_ROOT/wallpaper (login.png/login.jpg or any .png/.jpg)"
-    fi
+    log "No wallpaper found in $PROJECT_ROOT/wallpaper (png/jpg)"
   fi
   # Adjust metadata to reflect the fork
   if [[ -f "$THEME_DEST_DIR/metadata.desktop" ]]; then
@@ -113,6 +131,17 @@ deploy_config(){
       log "Config copied: $dest"
     done
   fi
+  # Ensure our theme/general conf is present even if repo confs are missing
+  cat > "$etc_conf_dir/10-theme.conf" <<EOF
+[Theme]
+Current=$THEME_NAME
+
+[General]
+DisplayServer=x11
+DefaultSession=bspwm
+EOF
+  chmod 0644 "$etc_conf_dir/10-theme.conf"; chown root:root "$etc_conf_dir/10-theme.conf" 2>/dev/null || true
+  log "Config enforced: $etc_conf_dir/10-theme.conf"
 }
 
 # Ensure main /etc/sddm.conf does not override our theme and X11 settings

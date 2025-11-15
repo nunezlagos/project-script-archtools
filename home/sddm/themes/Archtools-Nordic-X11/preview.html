@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Preview SDDM Theme (HTML)</title>
+  <style>
+    :root{
+      --bg-dark:#0E0F12;
+      --panel-dark:#1A1C1F;
+      --border-light:rgba(255,255,255,0.22);
+      --text-light:#FFFFFF;
+      --text-muted:rgba(255,255,255,0.70);
+      --overlay:rgba(0, 0, 0, 0.719);
+      --radius:5px;
+      --gap:16px;
+      --input-h:38px;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background: var(--bg-dark);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-light);
+    }
+    .bg{
+      position:fixed; inset:0;
+      /* Fondo solicitado: wallpaper_2.jpg */
+      background: url('/wallpaper/login.png') center/cover no-repeat;
+      z-index:0;
+    }
+    .overlay{position:fixed; inset:0; background:var(--overlay); z-index:1;}
+    .wrap{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:2;}
+    .panel{
+      width:400px; height:200px; background:rgba(26,28,31,0.40);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      border:1px solid rgba(255,255,255,0.16); border-radius:var(--radius);
+      position:relative; padding:24px; box-sizing:border-box;
+    }
+    .fields{display:flex; flex-direction:column; gap:var(--gap)}
+    input{
+      height:var(--input-h); padding:0 10px; color:var(--text-light);
+      background:var(--panel-dark); border:1px solid var(--border-light);
+      border-radius:var(--radius); outline:none;
+      text-align:center; line-height:var(--input-h);
+      transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    /* Centrar el placeholder dentro del input */
+    input::placeholder{ text-align:center; }
+    input::-webkit-input-placeholder{ text-align:center; }
+    input::-moz-placeholder{ text-align:center; }
+    input:-ms-input-placeholder{ text-align:center; }
+    .btn{
+      height:var(--input-h); padding:0 16px; border-radius:var(--radius);
+      background:rgba(255,255,255,0.12); color:var(--text-light);
+      border:1px solid var(--border-light); cursor:pointer;
+    }
+    .btn.center{width:50%; margin:0 auto; display:block}
+    /* Estados de interacción */
+    input:hover{ border-color: rgba(255,255,255,0.32); }
+    input:focus{
+      border-color: rgba(255,255,255,0.42);
+      background: rgba(26,28,31,0.55);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.10);
+    }
+    input:focus::placeholder{ color: rgba(255,255,255,0.35); }
+    .btn:hover{ background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.28); }
+    .btn:active{ background: rgba(255,255,255,0.22); }
+    .btn:focus{ outline: none; box-shadow: 0 0 0 2px rgba(255,255,255,0.10); }
+    .footer .session-btn{width:32px; height:32px; border-radius:var(--radius); background:rgba(255,255,255,0.06); border:1px solid var(--border-light); color:var(--text-light); cursor:pointer}
+    .session-menu{position:fixed; bottom:60px; right:18px; background:var(--panel-dark); border:1px solid var(--border-light); border-radius:var(--radius); display:none; z-index:2}
+    .session-menu button{display:block; width:140px; height:32px; background:transparent; color:var(--text-light); border:none; text-align:left; padding:0 10px; cursor:pointer}
+    .session-menu button:hover{background:rgba(255,255,255,0.08)}
+    .footer{position:fixed; right:18px; bottom:18px; z-index:2; display:flex; gap:12px; align-items:flex-end}
+    .footer .date{color:var(--text-muted); font-size:14px}
+    .footer .time{color:var(--text-light); font-size:18px; font-weight:600}
+  </style>
+  <script>
+    let currentSession='bspwm';
+    function login(){
+      const user=document.getElementById('user').value;
+      const pass=document.getElementById('pass').value;
+      alert(`Login (mock)\nuser: ${user}\nsession: ${currentSession}`);
+    }
+    function toggleMenu(){
+      const m=document.getElementById('sessionMenu');
+      m.style.display=(m.style.display==='block')?'none':'block';
+    }
+    function setSession(s){
+      currentSession=s;
+      document.getElementById('sessionMenu').style.display='none';
+    }
+    function updateClock(){
+      const now=new Date();
+      const date=now.toLocaleDateString(undefined,{weekday:'short', year:'numeric', month:'short', day:'numeric'});
+      const time=now.toLocaleTimeString(undefined,{hour:'2-digit', minute:'2-digit'});
+      document.getElementById('date').textContent=date;
+      document.getElementById('time').textContent=time;
+    }
+    window.addEventListener('DOMContentLoaded',()=>{
+      document.getElementById('pass').addEventListener('keydown',e=>{ if(e.key==='Enter'){ login(); } });
+      updateClock();
+      setInterval(updateClock,1000);
+    });
+  </script>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="overlay"></div>
+
+  <div class="wrap">
+    <div class="panel">
+      <div class="fields">
+        <input id="user" type="text" placeholder="Username" />
+        <input id="pass" type="password" placeholder="Password" />
+        <button class="btn center" onclick="login()">Login</button>
+      </div>
+      
+    </div>
+  </div>
+  <div class="footer"><span id="date" class="date"></span><span id="time" class="time"></span><button class="session-btn" onclick="toggleMenu()" title="Elegir sesión">⚙</button></div>
+  <div id="sessionMenu" class="session-menu">
+    <button onclick="setSession('bspwm')">bspwm</button>
+    <button onclick="setSession('i3')">i3</button>
+    <button onclick="setSession('plasma')">plasma</button>
+  </div>
+</body>
+</html>
