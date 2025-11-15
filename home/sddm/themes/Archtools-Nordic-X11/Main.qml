@@ -34,7 +34,7 @@ Rectangle {
 
     Rectangle {
     id: panel
-    width: 400; height: 200
+    width: 400; height: 180
     radius: 5
     color: panelDark
     opacity: 0.80
@@ -51,7 +51,7 @@ Rectangle {
       anchors.margins: 8
       spacing: 12
       // Padding superior general
-      Item { height: 30 }
+      Item { height: 36 }
 
   
       TextField {
@@ -113,6 +113,9 @@ Rectangle {
           sddm.login(userField.text, passField.text, selectedSession)
         }
       }
+
+      // Padding inferior final
+      Item { height: 24 }
 
       // No extra controls: minimal UI
     }
