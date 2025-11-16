@@ -47,7 +47,25 @@ EndSection
 EOF
 }
 
+cleanup_old_config(){
+  # Evitar cargas forzadas de módulos si no existen aún
+  run_quiet rm -f /etc/modules-load.d/virtualbox.conf
+}
+
+resolve_conflicts(){
+  # Si ambos (arch y dkms) están instalados, preservar los módulos arch y quitar dkms
+  local has_arch has_dkms
+  has_arch=$(pacman -Qq virtualbox-guest-modules-arch 2>/dev/null || true)
+  has_dkms=$(pacman -Qq virtualbox-guest-dkms 2>/dev/null || true)
+  if [[ -n "$has_arch" && -n "$has_dkms" ]]; then
+    log "Detectado dkms y arch a la vez; removiendo dkms para evitar conflictos"
+    pacman -Rns --noconfirm virtualbox-guest-dkms || true
+  fi
+}
+
 install_guest_additions
+resolve_conflicts
+cleanup_old_config
 configure_services
 configure_xorg
 
