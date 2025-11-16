@@ -30,9 +30,7 @@ feh --bg-fill ~/.config/wallpaper/onigirl.png
 # CUSTOM
 bspc config focus_follows_pointer true
 
-# PICOM (jonaburg) con backends experimentales y config explícita
-pkill picom 2>/dev/null || true
-picom --experimental-backends --config "$HOME/.config/picom/picom.conf" &
+# Compositor eliminado: no iniciar picom
 bspc config border_width 0
 
 xsetroot -cursor_name left_ptr &

@@ -121,7 +121,6 @@ verify_dirs(){
   [[ -d "$CONFIG_DIR" ]] && \
   [[ -d "$CONFIG_DIR/bspwm" ]] && \
   [[ -d "$CONFIG_DIR/sxhkd" ]] && \
-  [[ -d "$CONFIG_DIR/picom" ]] && \
   [[ -d "$CONFIG_DIR/dunst" ]] && \
   [[ -d "$CONFIG_DIR/kitty" ]] && \
   [[ -d "$CONFIG_DIR/fish" ]] && \
@@ -150,18 +149,6 @@ verify_bspwm(){
 }
 
 verify_sxhkd(){ [[ -f "$CONFIG_DIR/sxhkd/sxhkdrc" ]]; }
-verify_picom(){
-  # Incluir /usr/local/bin en PATH para detectar binario compilado manualmente
-  PATH="/usr/local/bin:$PATH"
-  if [[ ! -f "$CONFIG_DIR/picom/picom.conf" ]]; then
-    echo "[verify_picom] missing: $CONFIG_DIR/picom/picom.conf" >>"$LOG_FILE"; return 1
-  fi
-  if ! command -v picom >/dev/null 2>&1; then
-    echo "[verify_picom] picom binary not found in PATH" >>"$LOG_FILE"; return 1
-  fi
-  # Relajamos verificación de fork: aceptamos binario presente (compilado en /usr/local/bin)
-  return 0
-}
 verify_dunst(){ [[ -f "$CONFIG_DIR/dunst/dunstrc" ]]; }
 verify_kitty(){ [[ -f "$CONFIG_DIR/kitty/kitty.conf" ]]; }
 verify_fish(){ [[ -f "$CONFIG_DIR/fish/config.fish" ]]; }
@@ -311,8 +298,7 @@ main(){
   SXHKD_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_sxhkd.sh"
   run_and_verify "SXHKD configured" "$SXHKD_SCRIPT" verify_sxhkd || true
 
-  PICOM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_picom.sh"
-  run_and_verify "Picom jonaburg configured" "$PICOM_SCRIPT" verify_picom || true
+  # Picom removido: no configurar compositor
 
   DUNST_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_dunst.sh"
   run_and_verify "Dunst configured" "$DUNST_SCRIPT" verify_dunst || true

@@ -7,6 +7,7 @@ set -g fish_greeting ''
 # Variables de entorno básicas
 set -gx EDITOR nano
 set -gx PAGER less
+set -gx COLORTERM truecolor
 
 # Aliases útiles, manteniendo herramientas presentes en el proyecto
 alias ll 'ls -lah'
