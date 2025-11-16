@@ -30,8 +30,8 @@ feh --bg-fill ~/.config/wallpaper/onigirl.png
 # CUSTOM
 bspc config focus_follows_pointer true
 
-# PICOM
-picom &
+# PICOM (jonaburg) usando configuración explícita
+picom --config "$HOME/.config/picom/picom.conf" &
 bspc config border_width 0
 
 xsetroot -cursor_name left_ptr &

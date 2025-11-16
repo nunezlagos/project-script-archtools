@@ -242,11 +242,8 @@ main(){
   fi
   enable_sddm
   verify_applied_config
-  # Reiniciar SDDM para aplicar inmediatamente el tema si se ejecuta desde TTY
-  if systemctl list-units --type=service | grep -q '^sddm.service'; then
-    log "Restarting SDDM to apply theme"
-    systemctl restart sddm >/dev/null 2>&1 || log "Could not restart sddm (may not be active)"
-  fi
+  # No iniciar/reiniciar SDDM durante la instalación para evitar mostrar el login
+  log "SDDM habilitado (arrancará tras reiniciar); no se inicia ahora"
   log "SDDM installed and configured"
 }
 

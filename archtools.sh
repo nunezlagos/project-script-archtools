@@ -150,7 +150,18 @@ verify_bspwm(){
 }
 
 verify_sxhkd(){ [[ -f "$CONFIG_DIR/sxhkd/sxhkdrc" ]]; }
-verify_picom(){ [[ -f "$CONFIG_DIR/picom/picom.conf" ]]; }
+verify_picom(){
+  if [[ ! -f "$CONFIG_DIR/picom/picom.conf" ]]; then
+    echo "[verify_picom] missing: $CONFIG_DIR/picom/picom.conf" >>"$LOG_FILE"; return 1
+  fi
+  if ! command -v picom >/dev/null 2>&1; then
+    echo "[verify_picom] picom binary not found in PATH" >>"$LOG_FILE"; return 1
+  fi
+  if ! picom --version 2>&1 | grep -qi "jonaburg"; then
+    echo "[verify_picom] installed picom is not jonaburg" >>"$LOG_FILE"; return 1
+  fi
+  return 0
+}
 verify_dunst(){ [[ -f "$CONFIG_DIR/dunst/dunstrc" ]]; }
 verify_kitty(){ [[ -f "$CONFIG_DIR/kitty/kitty.conf" ]]; }
 verify_fish(){ [[ -f "$CONFIG_DIR/fish/config.fish" ]]; }
@@ -175,7 +186,7 @@ check_internet(){
 # Required packages
 packages=(
   xorg-server xorg-xinit xorg-xauth
-  bspwm sxhkd polybar picom dunst feh kitty fish
+  bspwm sxhkd polybar dunst feh kitty fish
   nano rofi pavucontrol firefox
   networkmanager network-manager-applet
   nm-connection-editor
@@ -301,7 +312,7 @@ main(){
   run_and_verify "SXHKD configured" "$SXHKD_SCRIPT" verify_sxhkd || true
 
   PICOM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_picom.sh"
-  run_and_verify "Picom configured" "$PICOM_SCRIPT" verify_picom || true
+  run_and_verify "Picom jonaburg configured" "$PICOM_SCRIPT" verify_picom || true
 
   DUNST_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_dunst.sh"
   run_and_verify "Dunst configured" "$DUNST_SCRIPT" verify_dunst || true

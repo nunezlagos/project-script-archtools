@@ -12,15 +12,6 @@ DEST_DIR="$CONFIG_DIR/picom"
 
 log(){ echo "[picom] $1"; }
 
-remove_stock_picom(){
-  if command -v pacman >/dev/null 2>&1; then
-    if pacman -Qi picom >/dev/null 2>&1; then
-      log "Desinstalando picom estándar"
-      pacman -Rns --noconfirm picom || log "No se pudo desinstalar picom estándar (continuo)"
-    fi
-  fi
-}
-
 install_picom(){
   # Solo instalamos el fork con animaciones; sin helper AUR, abortamos con mensaje claro
   if command -v yay >/dev/null 2>&1; then
@@ -49,7 +40,6 @@ deploy_config(){
 }
 
 log "Preparando instalación y configuración de Picom jonaburg"
-remove_stock_picom
 install_picom
 deploy_config
 # Verificación estricta de versión
