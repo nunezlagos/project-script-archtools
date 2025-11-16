@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Instala/actualiza exclusivamente Picom jonaburg y despliega la configuración desde home/picom
+# Instala/actualiza exclusivamente Picom jonaburg desde fuente y despliega la configuración desde home/picom
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -13,17 +13,21 @@ DEST_DIR="$CONFIG_DIR/picom"
 log(){ echo "[picom] $1"; }
 
 install_picom(){
-  # Solo instalamos el fork con animaciones; sin helper AUR, abortamos con mensaje claro
-  if command -v yay >/dev/null 2>&1; then
-    log "Instalando picom-jonaburg-git vía yay"
-    yay -S --needed --noconfirm picom-jonaburg-git || { log "ERROR: fallo instalando picom-jonaburg-git con yay"; exit 1; }
-  elif command -v paru >/dev/null 2>&1; then
-    log "Instalando picom-jonaburg-git vía paru"
-    paru -S --needed --noconfirm picom-jonaburg-git || { log "ERROR: fallo instalando picom-jonaburg-git con paru"; exit 1; }
-  else
-    log "ERROR: no se encontró yay/paru. Instale un helper AUR y reintente."
-    exit 1
+  # Opción B: Compilar manualmente desde el repo jonaburg
+  log "Instalando dependencias de compilación (meson, ninja, base-devel, git)"
+  if command -v pacman >/dev/null 2>&1; then
+    pacman -S --needed --noconfirm meson ninja base-devel git || { log "ERROR: fallo instalando herramientas de compilación"; exit 1; }
   fi
+  local build_dir="/tmp/picom-jonaburg-build"
+  rm -rf "$build_dir" && mkdir -p "$build_dir"
+  chown "$USER_NAME:$USER_NAME" "$build_dir" 2>/dev/null || true
+  log "Clonando repositorio jonaburg/picom"
+  sudo -u "$USER_NAME" env HOME="$HOME_DIR" bash -lc "cd '$build_dir' && git clone https://github.com/jonaburg/picom.git && cd picom && git submodule update --init --recursive" || { log "ERROR: fallo clonando/submodules"; exit 1; }
+  log "Compilando con meson/ninja (release)"
+  sudo -u "$USER_NAME" env HOME="$HOME_DIR" bash -lc "cd '$build_dir/picom' && meson --buildtype=release . build && ninja -C build" || { log "ERROR: fallo compilando picom"; exit 1; }
+  log "Instalando binario en /usr/local/bin"
+  ninja -C "$build_dir/picom/build" install || { log "ERROR: fallo instalando picom en /usr/local"; exit 1; }
+  log "Picom instalado en /usr/local/bin/picom"
 }
 
 deploy_config(){
