@@ -5,6 +5,7 @@ vmware-user-suid-wrapper &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
 pgrep -x dunst > /dev/null || dunst &
+pgrep -x eww > /dev/null || eww daemon &
 
 # Iniciar con un único escritorio; el resto se crean dinámicamente vía sxhkd
 bspc monitor -d 1

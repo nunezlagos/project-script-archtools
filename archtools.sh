@@ -37,7 +37,7 @@ enforce_rules_prompt(){
 # Minimal output and progress
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
-TOTAL_STEPS=26
+TOTAL_STEPS=27
 CURRENT_STEP=0
 progress_init(){ : > "$LOG_FILE"; CURRENT_STEP=0; }
 progress_step(){
@@ -153,6 +153,7 @@ verify_dunst(){ [[ -f "$CONFIG_DIR/dunst/dunstrc" ]]; }
 verify_kitty(){ [[ -f "$CONFIG_DIR/kitty/kitty.conf" ]]; }
 verify_fish(){ [[ -f "$CONFIG_DIR/fish/config.fish" ]]; }
 verify_rofi(){ [[ -f "$CONFIG_DIR/rofi/config.rasi" ]]; }
+verify_eww(){ command -v eww >/dev/null 2>&1 && [[ -f "$CONFIG_DIR/eww/eww.yuck" ]]; }
 verify_wallpaper(){ [[ -d "$SCRIPT_DIR/wallpaper" ]] && ls -1 "$SCRIPT_DIR/wallpaper"/* >/dev/null 2>&1; }
 verify_polybar(){ [[ -f "$CONFIG_DIR/polybar/launch.sh" ]] || [[ -f "$CONFIG_DIR/polybar/current.ini" ]]; }
 verify_gtk_dark(){ [[ -f "$HOME_DIR/.config/gtk-3.0/settings.ini" ]] && grep -q "gtk-application-prefer-dark-theme=1" "$HOME_DIR/.config/gtk-3.0/settings.ini"; }
@@ -179,6 +180,7 @@ packages=(
   nm-connection-editor
   udisks2 udiskie libnotify gsimplecal flameshot pasystray
   yazi fastfetch yad calcurse papirus-icon-theme
+  bluez bluez-utils blueman
 )
 
 install_packages(){
@@ -315,6 +317,8 @@ main(){
   # Configure Polybar via dedicated script (installs package, deploys configs/fonts)
   POLYBAR_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_polybar.sh"
   run_and_verify "Polybar configured" "$POLYBAR_SCRIPT" verify_polybar || true
+  EWW_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_eww.sh"
+  run_and_verify "Eww installed/configured" "$EWW_SCRIPT" verify_eww || true
   run_and_verify "GTK dark configured" "$SCRIPT_DIR/home/intalation_scripts/config_gtk_dark.sh" verify_gtk_dark || true
   run_and_verify "Login services started" "$SCRIPT_DIR/home/intalation_scripts/config_login_services.sh" verify_login_services || true
   run_and_verify "Login loop avoided" "$SCRIPT_DIR/home/intalation_scripts/config_fix_login_loop.sh" verify_fix_login_loop || true

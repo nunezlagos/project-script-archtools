@@ -11,4 +11,10 @@ if systemctl list-unit-files | grep -q '^polkit'; then
   systemctl enable polkit.service || true
   systemctl start polkit.service || true
 fi
+
+# Enable Bluetooth if available
+if systemctl list-unit-files | grep -q '^bluetooth'; then
+  systemctl enable bluetooth.service || true
+  systemctl start bluetooth.service || true
+fi
 echo "[config_login_services] done"

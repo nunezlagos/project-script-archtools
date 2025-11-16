@@ -1,0 +1,43 @@
+@import "variables";
+
+// Minimal styles for the calendar widget
+.cal-box {
+  font-family: Iosevka Nerd Font;
+  background-color: $bg;
+  border-radius: 8px;
+  padding: 1rem 1rem .2rem;
+
+  .cal {
+    background-color: inherit;
+    padding: .8rem .25rem 0rem;
+    margin-left: 10px;
+
+    & > * { border: solid 0px transparent; }
+  }
+}
+
+calendar:selected { color: $accent; }
+calendar.header { color: $cyan; font-weight: bold; }
+calendar.button { color: $cyan; }
+calendar.highlight { color: $green; font-weight: bold; }
+calendar:indeterminate { color: rgba(205, 219, 249, 0.3); }
+
+// Minimal controls row under calendar
+.controls-box {
+  margin-top: .4rem;
+  background: $contrastbg;
+  border-radius: 7px;
+  padding: 6px 8px;
+  .btn {
+    background: $bg;
+    color: $fg;
+    border-bottom: solid 1px $blue;
+    border-radius: 7px;
+    padding: 4px 10px;
+    margin-right: 6px;
+    &:hover { background: $bgSecondary; }
+    &.danger { color: $red; border-bottom-color: $red; }
+    &.ok { color: $green; border-bottom-color: $green; }
+    &.mute { color: $yellow; border-bottom-color: $yellow; }
+  }
+}

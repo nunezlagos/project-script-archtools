@@ -1,0 +1,58 @@
+;; Eww minimal calendar widget and window
+
+(defwidget cal []
+  (box :class "cal-box" :orientation "v"
+    (calendar :class "cal")
+    (controls)
+  )
+)
+
+(defwindow calendar
+  :geometry (geometry :x "79%"
+                      :y "8%"
+                      :width "270px"
+                      :height "60px")
+  (cal)
+)
+
+;; Poll system states for controls
+(defpoll vol_pct :interval "2s"
+  "bash -lc 'pactl get-sink-volume @DEFAULT_SINK@ | awk \"{print \$5}\" | tr -d %'"
+)
+(defpoll vol_mute :interval "2s"
+  "bash -lc 'pactl get-sink-mute @DEFAULT_SINK@ | awk \"{print \$2}\"'"
+)
+(defpoll mic_mute :interval "2s"
+  "bash -lc 'pactl get-source-mute @DEFAULT_SOURCE@ | awk \"{print \$2}\"'"
+)
+(defpoll bt_power :interval "3s"
+  "bash -lc '(bluetoothctl show 2>/dev/null | grep -i \"Powered:\" | awk \"{print \$2}\") || echo no'"
+)
+
+;; Controls row: Bluetooth, volume, mic, device selectors via rofi
+(defwidget controls []
+  (box :class "controls-box"
+    (button :class "btn"
+      :onclick "bash -lc 'if bluetoothctl show 2>/dev/null | grep -qi \"Powered: yes\"; then bluetoothctl power off; else bluetoothctl power on; fi'"
+      (label :text "BT")
+    )
+    (button :class "btn"
+      :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ -5%'"
+      (label :text "Vol-"))
+    (button :class "btn"
+      :onclick "bash -lc 'pactl set-sink-mute @DEFAULT_SINK@ toggle'"
+      (label :text "Mute"))
+    (button :class "btn"
+      :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ +5%'"
+      (label :text "Vol+"))
+    (button :class "btn"
+      :onclick "bash -lc 'pactl set-source-mute @DEFAULT_SOURCE@ toggle'"
+      (label :text "Mic"))
+    (button :class "btn"
+      :onclick "bash -lc "'pactl list short sinks | awk "{print $1 \" \" $2}" | rofi -dmenu -p Sinks | awk "{print $1}" | xargs -r -I{} pactl set-default-sink {}'""
+      (label :text "Sink"))
+    (button :class "btn"
+      :onclick "bash -lc "'pactl list short sources | awk "{print $1 \" \" $2}" | rofi -dmenu -p Sources | awk "{print $1}" | xargs -r -I{} pactl set-default-source {}'""
+      (label :text "Source"))
+  )
+)
