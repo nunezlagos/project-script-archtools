@@ -53,6 +53,19 @@ progress_mark(){
   printf "[%s] %3d%% %b[%s]%b %s\n" "$bar" "$pct" "$color" "$icon" "$NC" "$msg"
 }
 
+# Print details from verification logs when a verify_fn reports failure
+print_verify_fail_details(){
+  local verify_fn="$1"
+  local pattern="[${verify_fn}]"
+  echo "[details] Verification failed in ${verify_fn}. Relevant log entries:" 
+  if grep -Fq "$pattern" "$LOG_FILE"; then
+    grep -F "$pattern" "$LOG_FILE" | tail -n 10
+  else
+    echo "[details] No explicit entries for ${verify_fn}. Showing last 20 lines of log:"
+    tail -n 20 "$LOG_FILE"
+  fi
+}
+
 # Task runner with post-configuration verification
 run_and_verify(){
   local task_name="$1"; local script_path="$2"; local verify_fn="$3"
@@ -68,6 +81,7 @@ run_and_verify(){
       return 0
     else
       progress_mark fail "$task_name"
+      print_verify_fail_details "$verify_fn"
       return 1
     fi
   fi
@@ -77,6 +91,7 @@ run_and_verify(){
   else
     warn "$task_name execution succeeded but verification failed"
     progress_mark fail "$task_name"
+    print_verify_fail_details "$verify_fn"
     return 1
   fi
 }
