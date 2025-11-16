@@ -5,7 +5,8 @@ vmware-user-suid-wrapper &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
 
-bspc monitor -d 1 2 3 4 5 6 7 
+# Iniciar con un único escritorio; el resto se crean dinámicamente vía sxhkd
+bspc monitor -d 1
 bspc config border_width         1
 bspc config window_gap         	12
 

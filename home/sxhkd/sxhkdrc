@@ -127,6 +127,11 @@ super + 8
 super + @8
     ~/.config/bspwm/scripts/ws_hold.sh 8 release
 
+super + 9
+    ~/.config/bspwm/scripts/ws_hold.sh 9 press & ~/.config/bspwm/scripts/ws_goto.sh 9
+super + @9
+    ~/.config/bspwm/scripts/ws_hold.sh 9 release
+
 ## removed: create workspace via polybar '+'
 
 # send focused window to workspace (create up to N) and enable long-press confirm
@@ -169,6 +174,11 @@ super + shift + 8
     ~/.config/bspwm/scripts/ws_hold_send.sh 8 press & ~/.config/bspwm/scripts/ws_send.sh 8
 super + shift + @8
     ~/.config/bspwm/scripts/ws_hold_send.sh 8 release
+
+super + shift + 9
+    ~/.config/bspwm/scripts/ws_hold_send.sh 9 press & ~/.config/bspwm/scripts/ws_send.sh 9
+super + shift + @9
+    ~/.config/bspwm/scripts/ws_hold_send.sh 9 release
 
 #############
 # preselect #

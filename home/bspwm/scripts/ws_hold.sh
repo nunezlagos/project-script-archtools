@@ -25,19 +25,31 @@ case "$event" in
       now_ts=$(date +%s)
       held=$(( now_ts - start_ts ))
       if (( held >= 3 )); then
-        # Confirm deletion of the focused desktop via dunst
-        current="$(bspc query -D -d --names)"
+        # Confirm deletion of the numbered desktop that was held
+        target="$key"
+        if ! bspc query -D -m --names | grep -qx "$target"; then
+          exit 0
+        fi
         mapfile -t desks < <(bspc query -D -m --names)
         if (( ${#desks[@]} <= 1 )); then
           notify-send "Workspaces" "No se puede eliminar: mínimo 1 escritorio" 2>/dev/null || true
           exit 0
         fi
-        choice=$(dunstify --print \
-          -A cancel,Cancelar -A delete,Eliminar \
-          "Workspaces" "¿Eliminar escritorio '$current'?" 2>/dev/null || echo cancel)
+        # If desktop has windows, warn but allow deletion (bspwm will move or close based on config)
+        if bspc query -N -d "$target" >/dev/null; then
+          warn="Contiene ventanas"
+        else
+          warn="Vacío"
+        fi
+        prompt="¿Eliminar escritorio '$target' ($warn)?"
+        if command -v dunstify >/dev/null 2>&1; then
+          choice=$(dunstify --print -A cancel,Cancelar -A delete,Eliminar "Workspaces" "$prompt" 2>/dev/null || echo cancel)
+        else
+          choice=$(printf "Eliminar\nCancelar" | rofi -dmenu -p "$prompt" 2>/dev/null || echo cancel)
+        fi
         if [[ "$choice" == "delete" ]]; then
-          bspc desktop -r "$current"
-          notify-send "Workspaces" "Escritorio '$current' eliminado" 2>/dev/null || true
+          bspc desktop -r "$target"
+          notify-send "Workspaces" "Escritorio '$target' eliminado" 2>/dev/null || true
         else
           notify-send "Workspaces" "Acción cancelada" 2>/dev/null || true
         fi

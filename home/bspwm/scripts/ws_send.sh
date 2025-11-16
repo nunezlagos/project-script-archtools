@@ -5,8 +5,8 @@ set -euo pipefail
 # Uso: ws_send.sh <1-8>
 
 target="${1:-}"
-if [[ -z "$target" || ! "$target" =~ ^[1-8]$ ]]; then
-  notify-send "WS Send" "Uso: ws_send.sh <1-8>" -u low -t 2000 || true
+if [[ -z "$target" || ! "$target" =~ ^[1-9]$ ]]; then
+  notify-send "WS Send" "Uso: ws_send.sh <1-9>" -u low -t 2000 || true
   exit 1
 fi
 

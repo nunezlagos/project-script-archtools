@@ -2,8 +2,8 @@
 set -euo pipefail
 
 target="${1:-}"
-if [[ -z "$target" || ! "$target" =~ ^[1-8]$ ]]; then
-  echo "Usage: ws_goto.sh <1-8>" >&2
+if [[ -z "$target" || ! "$target" =~ ^[1-9]$ ]]; then
+  echo "Usage: ws_goto.sh <1-9>" >&2
   exit 1
 fi
 
