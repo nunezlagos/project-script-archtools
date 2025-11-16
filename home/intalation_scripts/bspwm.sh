@@ -21,6 +21,8 @@ chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR/bspwm" 2>/dev/null || true
 
 # Registrar sesión BSPWM y wrapper
 WRAPPER="/usr/local/bin/start-bspwm-session"
+# Asegura directorios de destino
+sudo mkdir -p "/usr/local/bin" "/usr/share/xsessions"
 if [[ ! -f "$WRAPPER" ]]; then
   sudo tee "$WRAPPER" >/dev/null <<'EOF'
 #!/bin/sh
