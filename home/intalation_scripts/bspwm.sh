@@ -35,8 +35,10 @@ echo "PATH=$PATH" >>"$LOGFILE"
 echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >>"$LOGFILE"
 exec /usr/bin/bspwm >>"$LOGFILE" 2>&1
 EOF
-  sudo chmod +x "$WRAPPER"
 fi
+
+# Asegura permisos ejecutables incluso si el wrapper existía previamente
+sudo chmod +x "$WRAPPER" 2>/dev/null || true
 
 for f in "$HOME_DIR/.xinitrc" "$HOME_DIR/.xsession"; do
   cat > "$f" <<'EOF'
