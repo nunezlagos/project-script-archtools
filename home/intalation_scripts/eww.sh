@@ -34,9 +34,13 @@ fi
 
 oneline "desplegando configuración en $CONFIG_DIR"
 mkdir -p "$CONFIG_DIR/scss"
+mkdir -p "$CONFIG_DIR/scripts"
 cp -f "$ROOT_DIR/eww/eww.yuck" "$CONFIG_DIR/eww.yuck"
 cp -f "$ROOT_DIR/eww/scss/style.scss" "$CONFIG_DIR/scss/style.scss"
 cp -f "$ROOT_DIR/eww/scss/_variables.scss" "$CONFIG_DIR/scss/_variables.scss"
+cp -f "$ROOT_DIR/eww/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-sink.sh"
+cp -f "$ROOT_DIR/eww/scripts/select-source.sh" "$CONFIG_DIR/scripts/select-source.sh"
+chmod +x "$CONFIG_DIR/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-source.sh" 2>/dev/null || true
 chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
 
 # Arrancar daemon si no está corriendo

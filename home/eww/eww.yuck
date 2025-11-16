@@ -49,10 +49,10 @@
       :onclick "bash -lc 'pactl set-source-mute @DEFAULT_SOURCE@ toggle'"
       (label :text "Mic"))
     (button :class "btn"
-      :onclick "bash -lc "'pactl list short sinks | awk "{print $1 \" \" $2}" | rofi -dmenu -p Sinks | awk "{print $1}" | xargs -r -I{} pactl set-default-sink {}'""
+      :onclick "bash -lc '$HOME/.config/eww/scripts/select-sink.sh'"
       (label :text "Sink"))
     (button :class "btn"
-      :onclick "bash -lc "'pactl list short sources | awk "{print $1 \" \" $2}" | rofi -dmenu -p Sources | awk "{print $1}" | xargs -r -I{} pactl set-default-source {}'""
+      :onclick "bash -lc '$HOME/.config/eww/scripts/select-source.sh'"
       (label :text "Source"))
   )
 )
