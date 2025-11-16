@@ -4,7 +4,7 @@ set -euo pipefail
 # Polybar setup: install package, deploy configs, optional fonts
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 USER_NAME=${SUDO_USER:-$USER}
 HOME_DIR="/home/$USER_NAME"
 CONFIG_DIR="$HOME_DIR/.config"
@@ -28,7 +28,7 @@ install_polybar(){
 }
 
 deploy_polybar_config(){
-  local src="$PROJECT_ROOT/home/polybar"
+  local src="$ROOT_DIR/polybar"
   local dest="$CONFIG_DIR/polybar"
   if [[ ! -d "$src" ]]; then
     log "Polybar source not found: $src"; return 0
@@ -42,7 +42,7 @@ deploy_polybar_config(){
 }
 
 install_fonts_if_present(){
-  local font_src="$PROJECT_ROOT/home/polybar/fonts"
+  local font_src="$ROOT_DIR/polybar/fonts"
   if [[ -d "$font_src" ]]; then
     local font_dest="$HOME_DIR/.local/share/fonts"
     mkdir -p "$font_dest"
