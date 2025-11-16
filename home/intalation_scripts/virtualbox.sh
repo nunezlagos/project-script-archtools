@@ -23,12 +23,19 @@ install_guest_additions(){
     return 0
   fi
   log "Instalando paquetes de Guest Additions"
-  # Preferir módulos precompilados para kernel de Arch
-  if pacman -Si virtualbox-guest-modules-arch >/dev/null 2>&1; then
+  local has_linux has_lts has_zen
+  has_linux=$(pacman -Qq linux 2>/dev/null || true)
+  has_lts=$(pacman -Qq linux-lts 2>/dev/null || true)
+  has_zen=$(pacman -Qq linux-zen 2>/dev/null || true)
+  # Si solo está el kernel estándar 'linux' instalado, usar módulos precompilados
+  if [[ -n "$has_linux" && -z "$has_lts" && -z "$has_zen" ]]; then
     pacman -S --needed --noconfirm virtualbox-guest-utils virtualbox-guest-modules-arch || true
   else
-    # Fallback a DKMS (requiere headers del kernel)
-    pacman -S --needed --noconfirm virtualbox-guest-utils virtualbox-guest-dkms linux-headers || true
+    # En kernels LTS/ZEN u otros, usar DKMS y headers correspondientes
+    pacman -S --needed --noconfirm virtualbox-guest-utils virtualbox-guest-dkms || true
+    [[ -n "$has_linux" ]] && pacman -S --needed --noconfirm linux-headers || true
+    [[ -n "$has_lts" ]] && pacman -S --needed --noconfirm linux-lts-headers || true
+    [[ -n "$has_zen" ]] && pacman -S --needed --noconfirm linux-zen-headers || true
   fi
 }
 
