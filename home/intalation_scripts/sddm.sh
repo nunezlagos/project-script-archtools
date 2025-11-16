@@ -212,6 +212,45 @@ enable_sddm(){
   systemctl set-default graphical.target >/dev/null 2>&1 || true
 }
 
+# Ensure XSession entry for bspwm exists so DefaultSession=bspwm is valid
+ensure_xsession_entry(){
+  local desktop="/usr/share/xsessions/bspwm.desktop"
+  if [[ ! -f "$desktop" ]]; then
+    log "Creating XSession entry: $desktop"
+    cat > "$desktop" <<'EOF'
+[Desktop Entry]
+Name=BSPWM
+Comment=Binary space partitioning window manager
+Exec=/usr/local/bin/start-bspwm-session
+TryExec=/usr/local/bin/start-bspwm-session
+Type=XSession
+EOF
+    chmod 0644 "$desktop"; chown root:root "$desktop" 2>/dev/null || true
+  fi
+}
+
+# Verify that SDDM sees the expected configuration values
+verify_applied_config(){
+  local dump="/tmp/sddm-config-dump.log"
+  if command -v sddm >/dev/null 2>&1; then
+    if sddm --dump-config >"$dump" 2>&1; then
+      if ! grep -q "^Current=$THEME_NAME" "$dump"; then
+        log "Config check: Theme Current not set to $THEME_NAME (see $dump)"
+      fi
+      if ! grep -q "^DisplayServer=x11" "$dump"; then
+        log "Config check: DisplayServer not x11 (see $dump)"
+      fi
+      if ! grep -q "^DefaultSession=bspwm" "$dump"; then
+        log "Config check: DefaultSession not bspwm (see $dump)"
+      fi
+    else
+      log "Unable to dump SDDM config; see $dump"
+    fi
+  else
+    log "sddm command not found; skipping config dump verification"
+  fi
+}
+
 main(){
   require_root
   ensure_pacman_ready
@@ -224,7 +263,9 @@ main(){
   fi
   deploy_config
   enforce_main_conf
+  ensure_xsession_entry
   enable_sddm
+  verify_applied_config
   log "SDDM installed and configured"
 }
 
