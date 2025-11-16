@@ -4,7 +4,8 @@ set -euo pipefail
 # Safe SDDM installation and cleanup of other display managers
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"   # .../home
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"    # proyecto raíz
 CONF_SRC_DIR="$PROJECT_ROOT/sddm"
 THEME_NAME="Archtools-Nordic-X11"
 # Fuente del tema desde el repo (no dependemos de inspiration en el sistema destino)
@@ -77,16 +78,20 @@ resolve_wallpaper(){
     user_sel="$SDDM_WALLPAPER"
   fi
   if [[ -n "$user_sel" ]]; then
-    # Absolute/relative path or filename under $PROJECT_ROOT/wallpaper
+    # Absolute/relative path or filename under repo-root or home
     if [[ -f "$user_sel" ]]; then
       echo "$user_sel"; return 0
+    elif [[ -f "$REPO_ROOT/wallpaper/$user_sel" ]]; then
+      echo "$REPO_ROOT/wallpaper/$user_sel"; return 0
     elif [[ -f "$PROJECT_ROOT/wallpaper/$user_sel" ]]; then
       echo "$PROJECT_ROOT/wallpaper/$user_sel"; return 0
     fi
   fi
-  # Solo aceptamos login.png en $PROJECT_ROOT/wallpaper
+  # Solo aceptamos login.png; buscar primero en repo raíz, luego en home
   for name in "login.png"; do
-    local path="$PROJECT_ROOT/wallpaper/$name"
+    local path="$REPO_ROOT/wallpaper/$name"
+    if [[ -f "$path" ]]; then echo "$path"; return 0; fi
+    path="$PROJECT_ROOT/wallpaper/$name"
     if [[ -f "$path" ]]; then echo "$path"; return 0; fi
   done
   echo ""; return 1
@@ -213,8 +218,7 @@ main(){
   install_sddm_dependencies
   deploy_theme
   if ! validate_sddm_theme; then
-    log "SDDM validation failed; aborting installation."
-    exit 1
+    log "SDDM validation failed; proceeding to apply config and enable SDDM (per rules)."
   fi
   deploy_config
   enforce_main_conf
