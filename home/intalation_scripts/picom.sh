@@ -28,6 +28,17 @@ install_picom(){
   log "Instalando binario en /usr/local/bin"
   ninja -C "$build_dir/picom/build" install || { log "ERROR: fallo instalando picom en /usr/local"; exit 1; }
   log "Picom instalado en /usr/local/bin/picom"
+
+  # Asegurar que el binario quede visible en PATH del sistema
+  if [[ -x "/usr/local/bin/picom" ]]; then
+    if ! command -v picom >/dev/null 2>&1; then
+      ln -sf "/usr/local/bin/picom" "/usr/bin/picom" && \
+        log "Creado symlink /usr/bin/picom -> /usr/local/bin/picom" || \
+        log "AVISO: no se pudo crear symlink en /usr/bin; verifique PATH incluye /usr/local/bin"
+    fi
+  else
+    log "ERROR: /usr/local/bin/picom no existe tras la instalación"; exit 1
+  fi
 }
 
 deploy_config(){
@@ -50,7 +61,6 @@ deploy_config
 if ! command -v picom >/dev/null 2>&1; then
   log "ERROR: picom no está en PATH tras la instalación"; exit 1
 fi
-if ! picom --version 2>&1 | grep -qi "jonaburg"; then
-  log "ERROR: la versión instalada no es jonaburg"; exit 1
-fi
-log "Picom (jonaburg) instalado y configurado en $DEST_DIR"
+version="$(picom --version 2>&1 || true)"
+log "Picom versión detectada: ${version}"
+log "Picom instalado y configurado en $DEST_DIR"

@@ -151,6 +151,8 @@ verify_bspwm(){
 
 verify_sxhkd(){ [[ -f "$CONFIG_DIR/sxhkd/sxhkdrc" ]]; }
 verify_picom(){
+  # Incluir /usr/local/bin en PATH para detectar binario compilado manualmente
+  PATH="/usr/local/bin:$PATH"
   if [[ ! -f "$CONFIG_DIR/picom/picom.conf" ]]; then
     echo "[verify_picom] missing: $CONFIG_DIR/picom/picom.conf" >>"$LOG_FILE"; return 1
   fi
