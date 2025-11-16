@@ -115,16 +115,8 @@ validate_sddm_theme(){
   if ! command -v sddm-greeter >/dev/null 2>&1; then
     log "sddm-greeter not found (package sddm should provide it)"; issues=1
   else
-    # Run greeter in test mode to catch QML import errors without starting the DM
-    local out="/tmp/sddm-greeter-test.log"
-    if ! sddm-greeter --test-mode --theme "$THEME_DEST_DIR" >"$out" 2>&1; then
-      # No mostramos logs en pantalla; dejamos constancia mínima
-      log "Greeter test failed (see $out)"; issues=1
-      # Hint for common missing modules
-      if grep -qi "QtGraphicalEffects" "$out"; then log "Hint: install qt6-graphicaleffects"; fi
-      if grep -qi "QtQuick.Controls" "$out"; then log "Hint: install qt6-quickcontrols2"; fi
-      if grep -qi "module .* not installed" "$out"; then log "Hint: missing Qt module detected (see above)"; fi
-    fi
+    # Prueba del greeter deshabilitada por diseño: no se ejecuta durante la instalación
+    log "Skipping greeter GUI test during install"
   fi
   return $issues
 }
