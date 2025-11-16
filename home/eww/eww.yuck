@@ -33,26 +33,93 @@
 (defwidget controls []
   (box :class "controls-box"
     (button :class "btn"
-      :onclick "bash -lc 'if bluetoothctl show 2>/dev/null | grep -qi \"Powered: yes\"; then bluetoothctl power off; else bluetoothctl power on; fi'"
-      (label :text "BT")
-    )
+      :onclick "bash -lc 'eww open --toggle audio_panel'"
+      (label :class "icon" :text ""))
     (button :class "btn"
       :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ -5%'"
-      (label :text "Vol-"))
-    (button :class "btn"
+      (label :class "icon" :text ""))
+    (button :class "btn mute"
       :onclick "bash -lc 'pactl set-sink-mute @DEFAULT_SINK@ toggle'"
-      (label :text "Mute"))
+      (label :class "icon" :text ""))
     (button :class "btn"
       :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ +5%'"
-      (label :text "Vol+"))
+      (label :class "icon" :text ""))
     (button :class "btn"
-      :onclick "bash -lc 'pactl set-source-mute @DEFAULT_SOURCE@ toggle'"
-      (label :text "Mic"))
-    (button :class "btn"
-      :onclick "bash -lc '$HOME/.config/eww/scripts/select-sink.sh'"
-      (label :text "Sink"))
-    (button :class "btn"
-      :onclick "bash -lc '$HOME/.config/eww/scripts/select-source.sh'"
-      (label :text "Source"))
+      :onclick "bash -lc 'eww open --toggle audio_panel'"
+      (label :class "icon" :text ""))
   )
 )
+
+;; Panel mínimo para audio (sin rofi/dunst)
+(defpoll current_sink_name :interval "2s"
+  "bash -lc 'pactl info | awk -F\": \" \"/Default Sink/ {print $2}\"'" )
+(defpoll current_source_name :interval "2s"
+  "bash -lc 'pactl info | awk -F\": \" \"/Default Source/ {print $2}\"'" )
+
+(defwindow audio_panel
+  :monitor 0
+  :geometry (geometry :x "10%" :y "10%" :width "300px" :height "160px")
+  :stacking "fg"
+  :focusable true
+  (box :class "controls-box" :orientation "v" :space-evenly true :spacing 8
+    (box :orientation "h" :spacing 8
+      (label :class "icon" :text "")
+      (label :text current_sink_name)
+      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh prev'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh next'" (label :class "icon" :text "")))
+    (box :orientation "h" :spacing 8
+      (label :class "icon" :text "")
+      (label :text current_source_name)
+      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh prev'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh next'" (label :class "icon" :text "")))
+    (box :orientation "h" :spacing 8
+      (button :class "btn" :onclick "bash -lc 'eww close audio_panel'" (label :class "icon" :text "")))))
+
+;; Variables para confirmaciones minimalistas
+(defvar confirm_msg "¿Confirmar acción?")
+(defvar confirm_cmd "")
+
+;; Panel de confirmación minimalista
+(defwindow confirm_panel
+  :monitor 0
+  :geometry (geometry :x "35%" :y "35%" :width "240px" :height "120px")
+  :stacking "fg"
+  :focusable true
+  (box :class "confirm-box" :orientation "v" :spacing 10
+    (label :text confirm_msg)
+    (box :orientation "h" :spacing 8 :halign "center"
+      (button :class "btn danger"
+        :onclick "bash -lc '{{confirm_cmd}}'; eww close confirm_panel; eww close power_panel"
+        (label :text "Sí"))
+      (button :class "btn"
+        :onclick "bash -lc 'eww close confirm_panel'"
+        (label :text "No"))
+    )))
+
+;; Panel de energía con acciones
+(defwindow power_panel
+  :monitor 0
+  :geometry (geometry :x "83%" :y "6%" :width "220px" :height "140px")
+  :stacking "fg"
+  :focusable true
+  (box :class "controls-box" :orientation "v" :spacing 8
+    (button :class "btn"
+      :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh suspend'"
+      (label :class "icon" :text "󰤄"))
+    (button :class "btn"
+      :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh reboot'"
+      (label :class "icon" :text "󰜉"))
+    (button :class "btn danger"
+      :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh poweroff'"
+      (label :class "icon" :text ""))))
+
+;; Panel de música (maqueta)
+(defwindow music_panel
+  :monitor 0
+  :geometry (geometry :x "2%" :y "90%" :width "300px" :height "120px")
+  :stacking "fg"
+  :focusable true
+  (box :class "controls-box" :orientation "v" :spacing 8
+    (label :class "icon" :text "")
+    (label :text "Panel de Música (maqueta)")
+    (button :class "btn" :onclick "bash -lc 'eww close music_panel'" (label :text "Cerrar"))))

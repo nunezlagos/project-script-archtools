@@ -40,8 +40,22 @@ cp -f "$ROOT_DIR/eww/scss/style.scss" "$CONFIG_DIR/scss/style.scss"
 cp -f "$ROOT_DIR/eww/scss/_variables.scss" "$CONFIG_DIR/scss/_variables.scss"
 cp -f "$ROOT_DIR/eww/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-sink.sh"
 cp -f "$ROOT_DIR/eww/scripts/select-source.sh" "$CONFIG_DIR/scripts/select-source.sh"
-chmod +x "$CONFIG_DIR/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-source.sh" 2>/dev/null || true
+cp -f "$ROOT_DIR/eww/scripts/cycle-sink.sh" "$CONFIG_DIR/scripts/cycle-sink.sh"
+cp -f "$ROOT_DIR/eww/scripts/cycle-source.sh" "$CONFIG_DIR/scripts/cycle-source.sh"
+cp -f "$ROOT_DIR/eww/scripts/confirm.sh" "$CONFIG_DIR/scripts/confirm.sh"
+chmod +x "$CONFIG_DIR/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-source.sh" "$CONFIG_DIR/scripts/cycle-sink.sh" "$CONFIG_DIR/scripts/cycle-source.sh" "$CONFIG_DIR/scripts/confirm.sh" 2>/dev/null || true
 chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
+
+# Instalar fuentes de símbolos para iconos en Eww
+FONTS_SRC_DIR="$ROOT_DIR/polybar/fonts"
+FONTS_DST_DIR="$HOME_DIR/.local/share/fonts"
+mkdir -p "$FONTS_DST_DIR"
+for f in "SymbolsNerdFontMono-Regular.ttf" "SymbolsNerdFont-Regular.ttf"; do
+  if [[ -f "$FONTS_SRC_DIR/$f" ]]; then
+    cp -f "$FONTS_SRC_DIR/$f" "$FONTS_DST_DIR/$f"
+  fi
+done
+fc-cache -f >/dev/null 2>&1 || true
 
 # Arrancar daemon si no está corriendo
 if command -v eww >/dev/null 2>&1; then

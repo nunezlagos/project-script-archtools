@@ -41,3 +41,10 @@ calendar:indeterminate { color: rgba(205, 219, 249, 0.3); }
     &.mute { color: $yellow; border-bottom-color: $yellow; }
   }
 }
+.icon { font-family: "Symbols Nerd Font Mono"; font-size: 16px; }
+ 
+.confirm-box {
+  background: $contrastbg;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
