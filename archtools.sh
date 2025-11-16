@@ -95,9 +95,14 @@ verify_dirs(){
 }
 
 verify_bspwm(){
-  [[ -f "$CONFIG_DIR/bspwm/bspwmrc" ]] && \
-  [[ -x "/usr/local/bin/start-bspwm-session" || -x "/usr/bin/start-bspwm-session" ]] && \
-  [[ -f "/usr/share/xsessions/bspwm.desktop" ]]
+  # Requisitos mínimos: config de usuario + wrapper ejecutable
+  [[ -f "$CONFIG_DIR/bspwm/bspwmrc" ]] || return 1
+  [[ -x "/usr/local/bin/start-bspwm-session" || -x "/usr/bin/start-bspwm-session" ]] || return 1
+  # Acepta cualquiera: entrada .desktop o archivos de inicio (xinit/xsession)
+  if [[ -f "/usr/share/xsessions/bspwm.desktop" || -f "$HOME_DIR/.xinitrc" || -f "$HOME_DIR/.xsession" ]]; then
+    return 0
+  fi
+  return 1
 }
 
 verify_sxhkd(){ [[ -f "$CONFIG_DIR/sxhkd/sxhkdrc" ]]; }
