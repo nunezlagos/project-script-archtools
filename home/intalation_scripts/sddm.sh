@@ -184,6 +184,37 @@ EOF
   log "Config enforced: $etc_conf_dir/10-theme.conf"
 }
 
+# Remove/disable conflicting confs that override theme or session
+sanitize_conflicts(){
+  local etc_conf_dir="/etc/sddm.conf.d"
+  [[ -d "$etc_conf_dir" ]] || return 0
+  for f in "$etc_conf_dir"/*.conf; do
+    [[ -f "$f" ]] || continue
+    [[ "$f" == "$etc_conf_dir/10-theme.conf" ]] && continue
+    if grep -Eq '^(Current|ThemeDir)=' "$f" || grep -Eq '^(DisplayServer|DefaultSession)=' "$f"; then
+      local backup="${f}.backup-$(date +%Y%m%d_%H%M%S)"
+      cp "$f" "$backup" 2>/dev/null || true
+      mv "$f" "${f}.disabled" 2>/dev/null || true
+      log "Disabled conflicting config: $(basename "$f") (backup: $(basename "$backup"))"
+    fi
+  done
+}
+
+# Also neutralize vendor defaults under /usr/lib that override our settings
+sanitize_vendor_conflicts(){
+  local vendor_dir="/usr/lib/sddm/sddm.conf.d"
+  [[ -d "$vendor_dir" ]] || return 0
+  for f in "$vendor_dir"/*.conf; do
+    [[ -f "$f" ]] || continue
+    if grep -Eq '^(Current|ThemeDir)=' "$f" || grep -Eq '^(DisplayServer|DefaultSession)=' "$f"; then
+      local backup="${f}.backup-$(date +%Y%m%d_%H%M%S)"
+      cp "$f" "$backup" 2>/dev/null || true
+      mv "$f" "${f}.disabled" 2>/dev/null || true
+      log "Disabled vendor conflicting config: $(basename "$f") (backup: $(basename "$backup"))"
+    fi
+  done
+}
+
 # Ensure main /etc/sddm.conf does not override our theme and X11 settings
 enforce_main_conf(){
   local main_conf="/etc/sddm.conf"
@@ -262,10 +293,17 @@ main(){
     log "SDDM validation failed; proceeding to apply config and enable SDDM (per rules)."
   fi
   deploy_config
+  sanitize_conflicts
+  sanitize_vendor_conflicts
   enforce_main_conf
   ensure_xsession_entry
   enable_sddm
   verify_applied_config
+  # Reiniciar SDDM para aplicar inmediatamente el tema si se ejecuta desde TTY
+  if systemctl list-units --type=service | grep -q '^sddm.service'; then
+    log "Restarting SDDM to apply theme"
+    systemctl restart sddm >/dev/null 2>&1 || log "Could not restart sddm (may not be active)"
+  fi
   log "SDDM installed and configured"
 }
 
