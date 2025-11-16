@@ -4,6 +4,7 @@
 .cal-box {
   font-family: Iosevka Nerd Font;
   background-color: $bg;
+  color: $fg;
   border-radius: 8px;
   padding: 1rem 1rem .2rem;
 
@@ -25,7 +26,7 @@ calendar:indeterminate { color: rgba(205, 219, 249, 0.3); }
 // Minimal controls row under calendar
 .controls-box {
   margin-top: .4rem;
-  background: $contrastbg;
+  background: $bgSecondary;
   border-radius: 7px;
   padding: 6px 8px;
   .btn {
@@ -44,7 +45,20 @@ calendar:indeterminate { color: rgba(205, 219, 249, 0.3); }
 .icon { font-family: "Symbols Nerd Font Mono"; font-size: 16px; }
  
 .confirm-box {
-  background: $contrastbg;
+  background: $bgSecondary;
   border-radius: 8px;
   padding: 10px 12px;
+}
+
+// Secciones internas (Bluetooth/Audio) con estilo sutil oscuro
+.section {
+  background: $bgSecondary;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: $fg;
+}
+.section-title {
+  color: $fg;
+  font-weight: 600;
 }

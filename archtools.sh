@@ -181,6 +181,7 @@ packages=(
   udisks2 udiskie libnotify gsimplecal flameshot pasystray
   yazi fastfetch yad calcurse papirus-icon-theme
   bluez bluez-utils blueman
+  playerctl
 )
 
 install_packages(){

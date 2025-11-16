@@ -242,3 +242,10 @@ super + shift + f
 
 @Print + alt
         screenshot window
+# delete current workspace if empty
+super + 0
+    sh -c 'bspc query -N -d | grep -q . || bspc desktop -r'
+
+# close eww overlays with Escape
+Escape
+    sh -c 'eww close power_panel; eww close confirm_panel; eww close music_panel'

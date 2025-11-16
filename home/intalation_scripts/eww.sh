@@ -43,7 +43,9 @@ cp -f "$ROOT_DIR/eww/scripts/select-source.sh" "$CONFIG_DIR/scripts/select-sourc
 cp -f "$ROOT_DIR/eww/scripts/cycle-sink.sh" "$CONFIG_DIR/scripts/cycle-sink.sh"
 cp -f "$ROOT_DIR/eww/scripts/cycle-source.sh" "$CONFIG_DIR/scripts/cycle-source.sh"
 cp -f "$ROOT_DIR/eww/scripts/confirm.sh" "$CONFIG_DIR/scripts/confirm.sh"
-chmod +x "$CONFIG_DIR/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-source.sh" "$CONFIG_DIR/scripts/cycle-sink.sh" "$CONFIG_DIR/scripts/cycle-source.sh" "$CONFIG_DIR/scripts/confirm.sh" 2>/dev/null || true
+cp -f "$ROOT_DIR/eww/scripts/bt_select_init.sh" "$CONFIG_DIR/scripts/bt_select_init.sh"
+cp -f "$ROOT_DIR/eww/scripts/bt_select_cycle.sh" "$CONFIG_DIR/scripts/bt_select_cycle.sh"
+chmod +x "$CONFIG_DIR/scripts/select-sink.sh" "$CONFIG_DIR/scripts/select-source.sh" "$CONFIG_DIR/scripts/cycle-sink.sh" "$CONFIG_DIR/scripts/cycle-source.sh" "$CONFIG_DIR/scripts/confirm.sh" "$CONFIG_DIR/scripts/bt_select_init.sh" "$CONFIG_DIR/scripts/bt_select_cycle.sh" 2>/dev/null || true
 chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
 
 # Instalar fuentes de símbolos para iconos en Eww

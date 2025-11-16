@@ -1,13 +1,13 @@
-// Palette adapted to Kitty (Tokyo Night style) for consistency
-$bg: #1a1b26;
-$bgSecondary: #28344a;
-$contrastbg: #28344a;
-$fg: #a9b1d6;
-$black: #414868;
-$green: #73daca;
-$cyan: #7dcfff;
-$blue: #7aa2f7;
-$red: #f7768e;
-$yellow: #e0af68;
-$magenta: #bb9af7;
-$accent: #7aa2f7;
+// Paleta oscura minimalista (negro/white + acento rojo)
+$bg: #0d0d0f;           // fondo principal casi negro
+$bgSecondary: #141417;  // paneles internos
+$contrastbg: #101114;   // contenedores
+$fg: #f2f2f2;           // texto principal blanco suave
+$black: #000000;
+$green: #9ae6b4;        // verde suave (feedback ok)
+$cyan: #a0e7e5;         // cian sutil (headers)
+$blue: #7aa2f7;         // azul tenue (líneas)
+$red: #ff3b3b;          // acento rojo (activo/alerta)
+$yellow: #f6d365;       // amarillo suave (mute/advertencia)
+$magenta: #e09cf3;      // magenta tenue
+$accent: #ff3b3b;       // acento principal

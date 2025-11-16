@@ -2,16 +2,18 @@
 
 (defwidget cal []
   (box :class "cal-box" :orientation "v"
+    (notifications)
     (calendar :class "cal")
     (controls)
   )
 )
 
 (defwindow calendar
-  :geometry (geometry :x "79%"
-                      :y "8%"
-                      :width "270px"
-                      :height "60px")
+  :geometry (geometry :anchor "bottomright"
+                      :x "98%"
+                      :y "97%"
+                      :width "320px"
+                      :height "500px")
   (cal)
 )
 
@@ -29,24 +31,81 @@
   "bash -lc '(bluetoothctl show 2>/dev/null | grep -i \"Powered:\" | awk \"{print \$2}\") || echo no'"
 )
 
+;; Conteo de notificaciones pendientes desde dunst
+(defpoll notif_count :interval "3s"
+  "bash -lc 'dunstctl count waiting 2>/dev/null || echo 0'"
+)
+
+;; Estados para secciones internas en el calendario
+(defvar show_bt false)
+(defvar show_audio false)
+(defvar bt_selected_name "")
+(defvar bt_selected_addr "")
+
+;; Bloque de notificaciones minimalista dentro del calendario
+(defwidget notifications []
+  (box :class "section" :orientation "v" :spacing 6
+    (label :class "section-title" :text "Notificaciones")
+    (label :text "No hay nuevas notificaciones" :visible (= notif_count "0"))
+    (box :orientation "h" :spacing 6 :visible (!= notif_count "0")
+      (label :text "Pendientes: {{notif_count}}")
+      (button :class "btn" :onclick "bash -lc 'dunstctl close-all'" (label :class "icon" :text ""))
+    )
+  )
+)
+
 ;; Controls row: Bluetooth, volume, mic, device selectors via rofi
 (defwidget controls []
-  (box :class "controls-box"
-    (button :class "btn"
-      :onclick "bash -lc 'eww open --toggle audio_panel'"
-      (label :class "icon" :text ""))
-    (button :class "btn"
-      :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ -5%'"
-      (label :class "icon" :text ""))
-    (button :class "btn mute"
-      :onclick "bash -lc 'pactl set-sink-mute @DEFAULT_SINK@ toggle'"
-      (label :class "icon" :text ""))
-    (button :class "btn"
-      :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ +5%'"
-      (label :class "icon" :text ""))
-    (button :class "btn"
-      :onclick "bash -lc 'eww open --toggle audio_panel'"
-      (label :class "icon" :text ""))
+  (box :class "controls-box" :orientation "v" :spacing 6
+    ;; Fila de iconos principales
+    (box :orientation "h" :spacing 8
+      (button :class "btn"
+        :onclick "bash -lc 'eww update show_bt=1; eww update show_audio=0; $HOME/.config/eww/scripts/bt_select_init.sh'"
+        (label :class "icon" :text ""))
+      (button :class "btn"
+        :onclick "bash -lc 'eww update show_audio=1; eww update show_bt=0'"
+        (label :class "icon" :text ""))
+      (button :class "btn"
+        :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ -5%'"
+        (label :class "icon" :text ""))
+      (button :class "btn mute"
+        :onclick "bash -lc 'pactl set-sink-mute @DEFAULT_SINK@ toggle'"
+        (label :class "icon" :text ""))
+      (button :class "btn"
+        :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ +5%'"
+        (label :class "icon" :text ""))
+    )
+
+    ;; Sección Audio dentro del calendario
+    (box :class "section" :orientation "v" :spacing 6 :visible show_audio
+      (box :orientation "h" :spacing 6
+        (label :class "icon" :text "")
+        (label :text current_sink_name)
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh prev'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh next'" (label :class "icon" :text ""))
+      )
+      (box :orientation "h" :spacing 6
+        (label :class "icon" :text "")
+        (label :text current_source_name)
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh prev'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh next'" (label :class "icon" :text ""))
+      )
+    )
+
+    ;; Sección Bluetooth dentro del calendario
+    (box :class "section" :orientation "v" :spacing 6 :visible show_bt
+      (box :orientation "h" :spacing 6
+        (label :class "icon" :text "")
+        (label :text bt_selected_name)
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/bt_select_cycle.sh prev'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/bt_select_cycle.sh next'" (label :class "icon" :text ""))
+      )
+      (box :orientation "h" :spacing 6
+        (button :class "btn" :onclick "bash -lc 'if bluetoothctl show 2>/dev/null | grep -qi \"Powered: yes\"; then bluetoothctl power off; else bluetoothctl power on; fi'" (label :text "Power"))
+        (button :class "btn ok" :onclick "bash -lc '[[ -n \"{{bt_selected_addr}}\" ]] && bluetoothctl connect {{bt_selected_addr}}'" (label :text "Conectar"))
+        (button :class "btn danger" :onclick "bash -lc '[[ -n \"{{bt_selected_addr}}\" ]] && bluetoothctl disconnect {{bt_selected_addr}}'" (label :text "Desconectar"))
+      )
+    )
   )
 )
 
@@ -56,24 +115,7 @@
 (defpoll current_source_name :interval "2s"
   "bash -lc 'pactl info | awk -F\": \" \"/Default Source/ {print $2}\"'" )
 
-(defwindow audio_panel
-  :monitor 0
-  :geometry (geometry :x "10%" :y "10%" :width "300px" :height "160px")
-  :stacking "fg"
-  :focusable true
-  (box :class "controls-box" :orientation "v" :space-evenly true :spacing 8
-    (box :orientation "h" :spacing 8
-      (label :class "icon" :text "")
-      (label :text current_sink_name)
-      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh prev'" (label :class "icon" :text ""))
-      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh next'" (label :class "icon" :text "")))
-    (box :orientation "h" :spacing 8
-      (label :class "icon" :text "")
-      (label :text current_source_name)
-      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh prev'" (label :class "icon" :text ""))
-      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh next'" (label :class "icon" :text "")))
-    (box :orientation "h" :spacing 8
-      (button :class "btn" :onclick "bash -lc 'eww close audio_panel'" (label :class "icon" :text "")))))
+;; audio_panel ya no se usa (sin ventanas flotantes para audio)
 
 ;; Variables para confirmaciones minimalistas
 (defvar confirm_msg "¿Confirmar acción?")
@@ -82,7 +124,7 @@
 ;; Panel de confirmación minimalista
 (defwindow confirm_panel
   :monitor 0
-  :geometry (geometry :x "35%" :y "35%" :width "240px" :height "120px")
+  :geometry (geometry :anchor "center" :width "260px" :height "130px")
   :stacking "fg"
   :focusable true
   (box :class "confirm-box" :orientation "v" :spacing 10
@@ -99,7 +141,7 @@
 ;; Panel de energía con acciones
 (defwindow power_panel
   :monitor 0
-  :geometry (geometry :x "83%" :y "6%" :width "220px" :height "140px")
+  :geometry (geometry :anchor "center" :width "240px" :height "160px")
   :stacking "fg"
   :focusable true
   (box :class "controls-box" :orientation "v" :spacing 8
@@ -114,12 +156,28 @@
       (label :class "icon" :text ""))))
 
 ;; Panel de música (maqueta)
+(defpoll player_status :interval "2s" "bash -lc 'playerctl status 2>/dev/null || echo Desconocido'" )
+(defpoll player_title :interval "2s" "bash -lc 'playerctl metadata xesam:title 2>/dev/null || echo --'" )
+(defpoll player_artist :interval "2s" "bash -lc 'playerctl metadata xesam:artist 2>/dev/null || echo --'" )
+
 (defwindow music_panel
   :monitor 0
-  :geometry (geometry :x "2%" :y "90%" :width "300px" :height "120px")
+  :geometry (geometry :anchor "center" :width "420px" :height "180px")
   :stacking "fg"
   :focusable true
   (box :class "controls-box" :orientation "v" :spacing 8
-    (label :class "icon" :text "")
-    (label :text "Panel de Música (maqueta)")
-    (button :class "btn" :onclick "bash -lc 'eww close music_panel'" (label :text "Cerrar"))))
+    (box :orientation "h" :spacing 8
+      (label :class "icon" :text "")
+      (label :text player_status)
+    )
+    (box :orientation "v" :spacing 4
+      (label :text player_title)
+      (label :text player_artist)
+    )
+    (box :orientation "h" :spacing 10 :halign "center"
+      (button :class "btn" :onclick "bash -lc 'playerctl previous'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'playerctl play-pause'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'playerctl next'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'eww close music_panel'" (label :class "icon" :text ""))
+    )
+  ))
