@@ -174,6 +174,7 @@ deploy_config(){
   cat > "$etc_conf_dir/10-theme.conf" <<EOF
 [Theme]
 Current=$THEME_NAME
+ThemeDir=/usr/share/sddm/themes
 
 [General]
 DisplayServer=x11
@@ -194,6 +195,7 @@ enforce_main_conf(){
   cat > "$main_conf" <<EOF
 [Theme]
 Current=$THEME_NAME
+ThemeDir=/usr/share/sddm/themes
 
 [General]
 DisplayServer=x11
