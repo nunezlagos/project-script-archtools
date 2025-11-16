@@ -12,6 +12,7 @@ THEME_NAME="Archtools-Nordic-X11"
 # Fuente del tema desde el repo (no dependemos de inspiration en el sistema destino)
 THEME_SRC_DIR="$CONF_SRC_DIR/themes/$THEME_NAME"
 THEME_DEST_DIR="/usr/share/sddm/themes/$THEME_NAME"
+ENABLE_SDDM=${ENABLE_SDDM:-0}
 
 log(){ echo "[sddm] $1"; }
 run_quiet(){ "$@" >/dev/null 2>&1 || true; }
@@ -185,8 +186,12 @@ enforce_main_conf(){
 }
 
 enable_sddm(){
-  log "Enabling SDDM"
-  systemctl enable sddm || log "Failed to enable SDDM"
+  if [[ "$ENABLE_SDDM" -eq 1 ]]; then
+    log "Enabling SDDM"
+    systemctl enable sddm || log "Failed to enable SDDM"
+  else
+    log "SDDM no habilitado (ENABLE_SDDM=0)"
+  fi
 }
 
 # Ensure XSession entry for bspwm exists so DefaultSession=bspwm is valid
@@ -235,7 +240,7 @@ main(){
   enable_sddm
   verify_applied_config
   # No iniciar/reiniciar SDDM durante la instalación para evitar mostrar el login
-  log "SDDM habilitado (arrancará tras reiniciar); no se inicia ahora"
+  log "SDDM no se inicia durante instalación."
   log "SDDM installed and configured"
 }
 

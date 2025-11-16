@@ -30,4 +30,9 @@ polybar -m > "$CONFIG_DIR/monitors.txt" 2>&1 || true
 polybar top -c "$CONFIG_DIR/top_bar.ini" -l info >> "$LOG_FILE" 2>&1 &
 polybar bottom -c "$CONFIG_DIR/bottom_bar.ini" -l info >> "$LOG_FILE" 2>&1 &
 
+# Ensure eww daemon is running so polybar clicks can open panels
+if command -v eww >/dev/null 2>&1; then
+  pgrep -x eww >/dev/null 2>&1 || eww daemon >> "$LOG_FILE" 2>&1 &
+fi
+
 echo "Polybar (top/bottom) launched; revisa $LOG_FILE"

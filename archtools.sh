@@ -8,6 +8,8 @@ USER_NAME=${SUDO_USER:-$USER}
 HOME_DIR="/home/$USER_NAME"
 CONFIG_DIR="$HOME_DIR/.config"
 BACKUP_DIR="$HOME_DIR/.config_backup_$(date +%Y%m%d_%H%M%S)"
+ENABLE_SDDM=${ENABLE_SDDM:-0}        # 0: no habilitar SDDM por defecto (opt‑in)
+AUTO_REBOOT=${AUTO_REBOOT:-0}        # 0: no reiniciar automáticamente
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 ok(){ echo -e "${GREEN}[✓]${NC} $1"; }
@@ -68,9 +70,25 @@ progress_mark(){
   case "$status" in
     ok)   icon="✓"; color="$GREEN" ;;
     fail) icon="✗"; color="$RED"   ;;
+    start) icon="…"; color="$YELLOW" ;;
     *)    icon="•";  color="$YELLOW";;
   esac
   printf "[%s] %3d%% %b[%s]%b %s\n" "$bar" "$pct" "$color" "$icon" "$NC" "$msg"
+}
+
+# Mantener credenciales sudo vivas para evitar múltiples prompts durante la instalación
+ensure_sudo(){
+  if command -v sudo >/dev/null 2>&1; then
+    sudo -v || true
+    (
+      while true; do
+        sleep 50
+        sudo -n -v >/dev/null 2>&1 || true
+      done
+    ) &
+    SUDO_KEEPALIVE_PID=$!
+    trap '[[ -n "${SUDO_KEEPALIVE_PID:-}" ]] && kill "${SUDO_KEEPALIVE_PID}" 2>/dev/null || true' EXIT
+  fi
 }
 
 # Print details from verification logs when a verify_fn reports failure
@@ -94,7 +112,39 @@ run_and_verify(){
     progress_mark fail "$task_name"
     return 1
   fi
+  progress_mark start "Iniciando: $task_name (log en $LOG_FILE)"
   if ! sudo bash "$script_path" >>"$LOG_FILE" 2>&1; then
+    warn "$task_name reported issues during execution"
+    if "$verify_fn" >/dev/null 2>&1; then
+      progress_mark ok "$task_name"
+      return 0
+    else
+      progress_mark fail "$task_name"
+      print_verify_fail_details "$verify_fn"
+      return 1
+    fi
+  fi
+  if "$verify_fn" >/dev/null 2>&1; then
+    progress_mark ok "$task_name"
+    return 0
+  else
+    warn "$task_name execution succeeded but verification failed"
+    progress_mark fail "$task_name"
+    print_verify_fail_details "$verify_fn"
+    return 1
+  fi
+}
+
+# Versión con salida en vivo para tareas largas (ej.: compilación/instalación de Eww desde AUR)
+run_and_verify_verbose(){
+  local task_name="$1"; local script_path="$2"; local verify_fn="$3"
+  if [[ ! -f "$script_path" ]]; then
+    warn "$task_name script not found at $script_path"
+    progress_mark fail "$task_name"
+    return 1
+  fi
+  progress_mark start "Iniciando: $task_name (salida en vivo; log en $LOG_FILE)"
+  if ! sudo bash "$script_path" 2>&1 | tee -a "$LOG_FILE"; then
     warn "$task_name reported issues during execution"
     if "$verify_fn" >/dev/null 2>&1; then
       progress_mark ok "$task_name"
@@ -273,6 +323,7 @@ reboot_system(){
 
 main(){
   progress_init
+  ensure_sudo
   check_internet
   progress_mark ok "Internet connectivity"
   enforce_rules_prompt
@@ -319,13 +370,17 @@ main(){
   POLYBAR_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_polybar.sh"
   run_and_verify "Polybar configured" "$POLYBAR_SCRIPT" verify_polybar || true
   EWW_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_eww.sh"
-  run_and_verify "Eww installed/configured" "$EWW_SCRIPT" verify_eww || true
+  run_and_verify_verbose "Eww installed/configured" "$EWW_SCRIPT" verify_eww || true
   run_and_verify "GTK dark configured" "$SCRIPT_DIR/home/intalation_scripts/config_gtk_dark.sh" verify_gtk_dark || true
   run_and_verify "Login services started" "$SCRIPT_DIR/home/intalation_scripts/config_login_services.sh" verify_login_services || true
   run_and_verify "Login loop avoided" "$SCRIPT_DIR/home/intalation_scripts/config_fix_login_loop.sh" verify_fix_login_loop || true
   # Install and enforce SDDM after dotfiles are installed
-  SDDM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_sddm.sh"
-  run_and_verify "SDDM installed" "$SDDM_SCRIPT" verify_sddm || true
+  if [[ "$ENABLE_SDDM" -eq 1 ]]; then
+    SDDM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_sddm.sh"
+    run_and_verify "SDDM installed" "$SDDM_SCRIPT" verify_sddm || true
+  else
+    progress_mark ok "SDDM omitido (deshabilitado por defecto)"
+  fi
   reinstall_firefox_clean
   run_and_verify "NetworkManager enabled" "$SCRIPT_DIR/home/intalation_scripts/config_networkmanager.sh" verify_networkmanager || true
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
@@ -344,7 +399,11 @@ main(){
     yay -Syu --noconfirm --cleanafter --noredownload >>"$LOG_FILE" 2>&1 && progress_mark ok "AUR packages updated" || progress_mark fail "AUR packages update"
   fi
   final_tips
-  reboot_system
+  if [[ "$AUTO_REBOOT" -eq 1 ]]; then
+    reboot_system
+  else
+    progress_mark ok "Reinicio omitido (AUTO_REBOOT=0). Cierra sesión/reinicia manual si deseas."
+  fi
 }
 
 main "$@"
