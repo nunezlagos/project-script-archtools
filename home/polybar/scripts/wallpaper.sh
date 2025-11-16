@@ -19,29 +19,12 @@ list_images(){
 apply_wallpaper(){
   local img="$1"
   if [ -z "$img" ]; then return 0; fi
-  # Solo X11: overlay de transición suave y aplicación con feh
-  if command -v mpv >/dev/null 2>&1; then
-    # Primero detenemos preview (si existe) para evitar solapamiento
-    stop_preview || true
-    # Imagen nítida con fade-in para dar sensación de "aclara desde el centro"
-    mpv "$img" --fs --no-border --ontop --really-quiet \
-        --image-display-duration=1.0 --keep-open=no --no-input-default-bindings \
-        --vf=lavfi=[fade=in:0:60] >/dev/null 2>&1 &
-    echo $! > "$STATE_PID"
-    sleep 0.50
-  fi
   feh --bg-fill "$img"
-  # Apaga overlay para simular transición de salida con picom
-  if [ -f "$STATE_PID" ]; then
-    kill "$(cat "$STATE_PID")" >/dev/null 2>&1 || true
-    rm -f "$STATE_PID"
-  fi
 }
 
 start_preview(){
   local img="$1"
   if [ -z "$img" ]; then return 0; fi
-  # Vista previa en pantalla (encima), que se desvanece con picom
   if command -v mpv >/dev/null 2>&1; then
     # Preview con blur y ligera viñeta para simular "todo en blur" desde el centro
     mpv "$img" --fs --no-border --ontop --really-quiet --image-display-duration=inf \

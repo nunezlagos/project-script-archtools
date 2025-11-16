@@ -30,7 +30,6 @@ feh --bg-fill ~/.config/wallpaper/onigirl.png
 # CUSTOM
 bspc config focus_follows_pointer true
 
-# Compositor eliminado: no iniciar picom
 bspc config border_width 0
 
 xsetroot -cursor_name left_ptr &

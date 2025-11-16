@@ -23,3 +23,8 @@ if type -q yazi
 end
 
 # Prompt por defecto de fish es suficiente; no añadimos temas
+
+# Lanzador de Kitty con renderizado por software (evita pantallas negras si GL falla)
+function k --description 'Launch kitty with software rendering'
+  env LIBGL_ALWAYS_SOFTWARE=1 kitty $argv
+end

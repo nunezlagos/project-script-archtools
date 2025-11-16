@@ -298,8 +298,6 @@ main(){
   SXHKD_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_sxhkd.sh"
   run_and_verify "SXHKD configured" "$SXHKD_SCRIPT" verify_sxhkd || true
 
-  # Picom removido: no configurar compositor
-
   DUNST_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_dunst.sh"
   run_and_verify "Dunst configured" "$DUNST_SCRIPT" verify_dunst || true
 
