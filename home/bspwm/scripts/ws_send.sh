@@ -17,17 +17,21 @@ if [[ -z "$mon" ]]; then
   exit 1
 fi
 
-# Asegura que existan escritorios 1..target en el monitor
-for i in $(seq 1 "$target"); do
-  if ! bspc query -D -m "$mon" | grep -qx "$i"; then
-    bspc monitor "$mon" -a "$i"
-  fi
-done
+# Crear secuencialmente solo el siguiente (máximo+1) si el destino no existe
+if ! bspc query -D -m "$mon" | grep -qx "$target"; then
+  max=$(bspc query -D -m "$mon" --names | sort -n | tail -n1)
+  [[ -z "$max" ]] && max=0
+  next=$(( max + 1 ))
+  bspc monitor "$mon" -a "$next"
+  dest="$next"
+else
+  dest="$target"
+fi
 
-# Enviar el nodo (ventana) al escritorio destino (mantiene el foco actual)
+# Enviar el nodo (ventana) al escritorio elegido (mantiene el foco actual)
 if bspc query -N -n focused >/dev/null; then
-  bspc node -d "$target"
-  notify-send "WS Send" "Ventana enviada al escritorio $target" -u low -t 1500 || true
+  bspc node -d "$dest"
+  notify-send "WS Send" "Ventana enviada al escritorio $dest" -u low -t 1500 || true
 else
   notify-send "WS Send" "No hay ventana enfocada para enviar" -u low -t 2000 || true
 fi

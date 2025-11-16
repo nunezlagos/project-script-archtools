@@ -10,12 +10,16 @@ if [[ -z "$key" || -z "$event" ]]; then
 fi
 
 stamp_file="/tmp/ws_hold_$key"
+debug_log="/tmp/ws_hold_debug.log"
+
+log(){ echo "[$(date +%H:%M:%S)] $1" >> "$debug_log"; }
 
 case "$event" in
   press)
     # Guard against auto-repeat: only set timestamp if not already present
     if [[ ! -f "$stamp_file" ]]; then
       date +%s > "$stamp_file"
+      log "key=$key press"
     fi
     ;;
   release)
@@ -24,15 +28,20 @@ case "$event" in
       rm -f "$stamp_file"
       now_ts=$(date +%s)
       held=$(( now_ts - start_ts ))
+      log "key=$key release held=${held}s"
       if (( held >= 3 )); then
         # Confirm deletion of the numbered desktop that was held
         target="$key"
         if ! bspc query -D -m --names | grep -qx "$target"; then
+          log "desktop $target not found; skip"
           exit 0
         fi
         mapfile -t desks < <(bspc query -D -m --names)
         if (( ${#desks[@]} <= 1 )); then
-          notify-send "Workspaces" "No se puede eliminar: mínimo 1 escritorio" 2>/dev/null || true
+          if command -v notify-send >/dev/null 2>&1; then
+            notify-send "Workspaces" "No se puede eliminar: mínimo 1 escritorio" 2>/dev/null || true
+          fi
+          log "refuse delete: only 1 desktop"
           exit 0
         fi
         # If desktop has windows, warn but allow deletion (bspwm will move or close based on config)
@@ -42,16 +51,33 @@ case "$event" in
           warn="Vacío"
         fi
         prompt="¿Eliminar escritorio '$target' ($warn)?"
-        if command -v dunstify >/dev/null 2>&1; then
-          choice=$(dunstify --print -A cancel,Cancelar -A delete,Eliminar "Workspaces" "$prompt" 2>/dev/null || echo cancel)
-        else
+        # Prefer rofi prompt; fallback to dunstify, then xmessage
+        if command -v rofi >/dev/null 2>&1; then
           choice=$(printf "Eliminar\nCancelar" | rofi -dmenu -p "$prompt" 2>/dev/null || echo cancel)
+          log "prompt via rofi -> $choice"
+        elif command -v dunstify >/dev/null 2>&1; then
+          choice=$(dunstify --print -A cancel,Cancelar -A delete,Eliminar "Workspaces" "$prompt" 2>/dev/null || echo cancel)
+          log "prompt via dunstify -> $choice"
+        elif command -v xmessage >/dev/null 2>&1; then
+          xmessage -buttons Eliminar:2,Cancelar:1 "$prompt"
+          rc=$?
+          if [[ "$rc" -eq 2 ]]; then choice="delete"; else choice="cancel"; fi
+          log "prompt via xmessage rc=$rc -> $choice"
+        else
+          choice="cancel"
+          log "no prompt available; default cancel"
         fi
         if [[ "$choice" == "delete" ]]; then
           bspc desktop -r "$target"
-          notify-send "Workspaces" "Escritorio '$target' eliminado" 2>/dev/null || true
+          if command -v notify-send >/dev/null 2>&1; then
+            notify-send "Workspaces" "Escritorio '$target' eliminado" 2>/dev/null || true
+          fi
+          log "deleted desktop $target"
         else
-          notify-send "Workspaces" "Acción cancelada" 2>/dev/null || true
+          if command -v notify-send >/dev/null 2>&1; then
+            notify-send "Workspaces" "Acción cancelada" 2>/dev/null || true
+          fi
+          log "cancel delete"
         fi
       fi
     fi
