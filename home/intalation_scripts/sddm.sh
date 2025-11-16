@@ -227,7 +227,11 @@ enforce_main_conf(){
     cp "$main_conf" "$backup" 2>/dev/null || true
     log "Backed up existing main config to $backup"
   fi
-  cat > "$main_conf" <<EOF
+  # Prefer template from repo if present
+  if [[ -f "$CONF_SRC_DIR/sddm.conf" ]]; then
+    cp "$CONF_SRC_DIR/sddm.conf" "$main_conf"
+  else
+    cat > "$main_conf" <<EOF
 [Theme]
 Current=$THEME_NAME
 ThemeDir=/usr/share/sddm/themes
@@ -236,6 +240,7 @@ ThemeDir=/usr/share/sddm/themes
 DisplayServer=x11
 DefaultSession=bspwm
 EOF
+  fi
   chmod 0644 "$main_conf"; chown root:root "$main_conf" 2>/dev/null || true
   if [[ -f "$main_conf" ]]; then
     log "Main config enforced at $main_conf: theme=$THEME_NAME, DisplayServer=x11, DefaultSession=bspwm"
