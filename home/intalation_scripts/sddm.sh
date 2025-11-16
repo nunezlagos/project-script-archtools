@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+umask 022
 
 # Safe SDDM installation and cleanup of other display managers
 
@@ -19,6 +20,15 @@ require_root(){
   if [[ $EUID -ne 0 ]]; then
     log "Root privileges required (run with sudo)."; exit 1
   fi
+}
+
+# Ensure system absolute paths exist and are writable by root
+ensure_system_dirs(){
+  log "Ensuring system directories exist (/etc, /etc/sddm.conf.d, /usr/share/sddm/themes, /usr/lib/sddm/sddm.conf.d, /usr/share/xsessions)"
+  mkdir -p /etc/sddm.conf.d
+  mkdir -p /usr/share/sddm/themes
+  mkdir -p /usr/lib/sddm/sddm.conf.d
+  mkdir -p /usr/share/xsessions
 }
 
 disable_and_remove_others(){
@@ -297,6 +307,7 @@ verify_applied_config(){
 
 main(){
   require_root
+  ensure_system_dirs
   ensure_pacman_ready
   disable_and_remove_others
   install_sddm
@@ -309,6 +320,12 @@ main(){
   sanitize_conflicts
   sanitize_vendor_conflicts
   enforce_main_conf
+  # Immediate existence check for hard paths
+  if [[ -f "/etc/sddm.conf" ]]; then
+    log "Verified: /etc/sddm.conf exists"
+  else
+    log "ERROR: /etc/sddm.conf not found after enforcement"
+  fi
   ensure_xsession_entry
   enable_sddm
   verify_applied_config
