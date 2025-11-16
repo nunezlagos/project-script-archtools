@@ -38,7 +38,11 @@ disable_and_remove_others(){
 
 install_sddm(){
   log "Installing SDDM"
-  pacman -S --needed --noconfirm sddm || { log "Failed installing sddm"; exit 1; }
+  if command -v pacman >/dev/null 2>&1; then
+    pacman -S --needed --noconfirm sddm || log "Failed installing sddm; continuing per rules"
+  else
+    log "pacman not available; skipping package install"
+  fi
 }
 
 # Ensure Qt/QML controls and SVG plugins are present for the greeter
@@ -233,7 +237,11 @@ DisplayServer=x11
 DefaultSession=bspwm
 EOF
   chmod 0644 "$main_conf"; chown root:root "$main_conf" 2>/dev/null || true
-  log "Main config enforced (overdrive): theme=$THEME_NAME, DisplayServer=x11, DefaultSession=bspwm"
+  if [[ -f "$main_conf" ]]; then
+    log "Main config enforced at $main_conf: theme=$THEME_NAME, DisplayServer=x11, DefaultSession=bspwm"
+  else
+    log "Warning: failed to create $main_conf"
+  fi
 }
 
 enable_sddm(){
