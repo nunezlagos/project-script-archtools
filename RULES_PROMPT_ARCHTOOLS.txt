@@ -1,0 +1,40 @@
+ArchTools — Reglas de ejecución (modo prompt)
+
+Contexto: como desarrollador y usuario de Arch Linux, estas reglas definen cómo debe ejecutarse y comportarse el instalador `archtools.sh` y sus scripts asociados en cada iteración.
+
+1) Sistema objetivo: Arch Linux
+- El instalador está pensado exclusivamente para Arch Linux.
+- Se asume `pacman` disponible y conectividad a internet para instalación/actualización.
+
+2) Medio de ejecución: TTY
+- El script debe ejecutarse desde una TTY (no dentro de una sesión gráfica).
+- Si no se detecta TTY, se mostrará aviso, pero no se detendrá a menos que la operación requiera estrictamente una TTY.
+
+3) Usuario de ejecución: no root (ejemplos: pepipo, jumper, patricio)
+- El instalador se ejecuta con privilegios (sudo) pero utilizando siempre el usuario real: `RUN_USER=${SUDO_USER:-$USER}`.
+- Los archivos de configuración SIEMPRE se escriben en `/home/$RUN_USER` y no en `/root`.
+- Si `RUN_USER` es `root` y no hay `SUDO_USER`, se debe avisar y pedir re-ejecución con `sudo` desde el usuario real.
+
+4) Política de errores y validaciones
+- El instalador SOLO se detiene ante errores fatales (p. ej. fallo de `pacman`, ausencia de binarios críticos, permisos o rutas del sistema).
+- Las validaciones post-instalación que no pasan deben registrar advertencias y continuar (no detener la instalación completa).
+- Se imprimen detalles de verificación fallida para depurar rápidamente (qué archivo/condición falta).
+
+5) Ubicación del proyecto y resolución de rutas
+- La ubicación típica será `carpeta/archtools.sh`, pero puede estar en cualquier path.
+- El script calcula rutas de forma robusta: `SCRIPT_DIR=$(dirname archtools.sh)` y `ROOT_DIR=$SCRIPT_DIR/home` para apuntar a fuentes de dotfiles.
+- Independiente de la carpeta actual, los archivos SIEMPRE terminan en las ubicaciones correctas del sistema y del usuario (ej. `~/.config/...`, `/usr/share/xsessions/...`, `/usr/local/bin/...`).
+
+6) Política de despliegue de configuraciones
+- Antes de cualquier instalación/ajuste, se desplegarán las configuraciones.
+- Si un archivo ya existe, se reemplaza (copiado forzado). Se asegura propiedad y permisos: `chown $RUN_USER:$RUN_USER` y `chmod` adecuados.
+- Se crean los directorios destino si no existen.
+
+Anexos operativos recomendados
+- X11 + SDDM: se fuerza `DisplayServer=x11` y `DefaultSession=bspwm` cuando se instala SDDM.
+- Sesión BSPWM: se exige wrapper ejecutable `start-bspwm-session` y entrada `.desktop` en `/usr/share/xsessions/`.
+- Registros: el instalador mantiene un log en `/tmp/archtools-install.log`; los detalles de verificación se imprimen en pantalla.
+
+Uso del archivo (prompt)
+- Adjuntar este texto como contexto en cada iteración/desarrollo para recordar el contrato operativo.
+- Toda modificación deberá respetar estas reglas; si una condición no se cumple, el script debe avisar, registrar en log y continuar cuando sea seguro hacerlo.

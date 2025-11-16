@@ -14,6 +14,26 @@ ok(){ echo -e "${GREEN}[✓]${NC} $1"; }
 warn(){ echo -e "${YELLOW}[!]${NC} $1"; }
 err(){ echo -e "${RED}[✗]${NC} $1"; }
 
+# Reglas de ejecución (RULES_PROMPT): Arch + TTY + usuario real + continuar en validaciones
+enforce_rules_prompt(){
+  # 1) Arch Linux (pacman disponible)
+  if ! command -v pacman >/dev/null 2>&1; then
+    err "Este instalador requiere Arch Linux (pacman no encontrado)"; exit 1
+  fi
+  # 2) TTY
+  if [[ ! -t 1 ]]; then
+    warn "Se recomienda ejecutar en TTY (no detección de TTY)"
+  fi
+  # 3) Usuario real no root
+  if [[ "$USER_NAME" == "root" ]]; then
+    warn "Se detectó ejecución como root. Recomendado: usar sudo desde un usuario real (ej. jumper)"
+  fi
+  # 5) Resolución de rutas y destino
+  [[ -n "$SCRIPT_DIR" ]] || { err "No se pudo resolver SCRIPT_DIR"; exit 1; }
+  [[ -d "$CONFIG_DIR" ]] || mkdir -p "$CONFIG_DIR"
+  echo "[rules] RULES_PROMPT_ARCHTOOLS aplicado: Arch+TTY+Usuario real+Continuar en validaciones" >>"$LOG_FILE"
+}
+
 # Minimal output and progress
 QUIET_MODE=1
 LOG_FILE="/tmp/archtools-install.log"
@@ -254,6 +274,7 @@ main(){
   progress_init
   check_internet
   progress_mark ok "Internet connectivity"
+  enforce_rules_prompt
   disable_conflicting_services
   if run_quiet sudo pacman -Syu --noconfirm --noprogressbar --quiet; then
     progress_mark ok "System packages pre-update"
@@ -271,42 +292,42 @@ main(){
   else
     progress_mark fail "yay installation"
   fi
-  run_and_verify "Directories prepared" "$SCRIPT_DIR/home/intalation_scripts/config_dirs.sh" verify_dirs
+  run_and_verify "Directories prepared" "$SCRIPT_DIR/home/intalation_scripts/config_dirs.sh" verify_dirs || true
   # Configure components using dedicated scripts from home/intalation_scripts
   BSPWM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_bspwm.sh"
-  run_and_verify "BSPWM configured" "$BSPWM_SCRIPT" verify_bspwm
+  run_and_verify "BSPWM configured" "$BSPWM_SCRIPT" verify_bspwm || true
 
   SXHKD_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_sxhkd.sh"
-  run_and_verify "SXHKD configured" "$SXHKD_SCRIPT" verify_sxhkd
+  run_and_verify "SXHKD configured" "$SXHKD_SCRIPT" verify_sxhkd || true
 
   PICOM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_picom.sh"
-  run_and_verify "Picom configured" "$PICOM_SCRIPT" verify_picom
+  run_and_verify "Picom configured" "$PICOM_SCRIPT" verify_picom || true
 
   DUNST_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_dunst.sh"
-  run_and_verify "Dunst configured" "$DUNST_SCRIPT" verify_dunst
+  run_and_verify "Dunst configured" "$DUNST_SCRIPT" verify_dunst || true
 
   KITTY_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_kitty.sh"
-  run_and_verify "Kitty configured" "$KITTY_SCRIPT" verify_kitty
+  run_and_verify "Kitty configured" "$KITTY_SCRIPT" verify_kitty || true
 
   FISH_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_fish.sh"
-  run_and_verify "Fish configured" "$FISH_SCRIPT" verify_fish
+  run_and_verify "Fish configured" "$FISH_SCRIPT" verify_fish || true
 
   ROFI_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_rofi.sh"
-  run_and_verify "Rofi configured" "$ROFI_SCRIPT" verify_rofi
+  run_and_verify "Rofi configured" "$ROFI_SCRIPT" verify_rofi || true
 
   WALLPAPER_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_wallpaper.sh"
-  run_and_verify "Wallpapers deployed" "$WALLPAPER_SCRIPT" verify_wallpaper
+  run_and_verify "Wallpapers deployed" "$WALLPAPER_SCRIPT" verify_wallpaper || true
   # Configure Polybar via dedicated script (installs package, deploys configs/fonts)
   POLYBAR_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_polybar.sh"
-  run_and_verify "Polybar configured" "$POLYBAR_SCRIPT" verify_polybar
-  run_and_verify "GTK dark configured" "$SCRIPT_DIR/home/intalation_scripts/config_gtk_dark.sh" verify_gtk_dark
-  run_and_verify "Login services started" "$SCRIPT_DIR/home/intalation_scripts/config_login_services.sh" verify_login_services
-  run_and_verify "Login loop avoided" "$SCRIPT_DIR/home/intalation_scripts/config_fix_login_loop.sh" verify_fix_login_loop
+  run_and_verify "Polybar configured" "$POLYBAR_SCRIPT" verify_polybar || true
+  run_and_verify "GTK dark configured" "$SCRIPT_DIR/home/intalation_scripts/config_gtk_dark.sh" verify_gtk_dark || true
+  run_and_verify "Login services started" "$SCRIPT_DIR/home/intalation_scripts/config_login_services.sh" verify_login_services || true
+  run_and_verify "Login loop avoided" "$SCRIPT_DIR/home/intalation_scripts/config_fix_login_loop.sh" verify_fix_login_loop || true
   # Install and enforce SDDM after dotfiles are installed
   SDDM_SCRIPT="$SCRIPT_DIR/home/intalation_scripts/config_sddm.sh"
-  run_and_verify "SDDM installed" "$SDDM_SCRIPT" verify_sddm
+  run_and_verify "SDDM installed" "$SDDM_SCRIPT" verify_sddm || true
   reinstall_firefox_clean
-  run_and_verify "NetworkManager enabled" "$SCRIPT_DIR/home/intalation_scripts/config_networkmanager.sh" verify_networkmanager
+  run_and_verify "NetworkManager enabled" "$SCRIPT_DIR/home/intalation_scripts/config_networkmanager.sh" verify_networkmanager || true
   sudo chown -R "$USER_NAME:$USER_NAME" "$CONFIG_DIR" 2>/dev/null || true
   progress_mark ok "Config ownership set"
   if bash "$SCRIPT_DIR/home/intalation_scripts/config_command_list.sh" >>"$LOG_FILE" 2>&1; then
