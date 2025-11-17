@@ -46,8 +46,8 @@
 (defwidget notifications []
   (box :class "section" :orientation "v" :spacing 6
     (label :class "section-title" :text "Notificaciones")
-    (label :text "No hay nuevas notificaciones" :visible (= notif_count "0"))
-    (box :orientation "h" :spacing 6 :visible (!= notif_count "0")
+    (label :text "No hay nuevas notificaciones" :visible {= notif_count "0"})
+    (box :orientation "h" :spacing 6 :visible {!= notif_count "0"}
       (label :text "Pendientes: {{notif_count}}")
       (button :class "btn" :onclick "bash -lc 'dunstctl close-all'" (label :class "icon" :text ""))
     )
