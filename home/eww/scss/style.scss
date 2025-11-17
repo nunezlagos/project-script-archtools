@@ -62,3 +62,19 @@ calendar:indeterminate { color: rgba(205, 219, 249, 0.3); }
   color: $fg;
   font-weight: 600;
 }
+
+// Fila unificada de controles rápidos (música + energía)
+.controls-row {
+  background: $bgSecondary;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: $fg;
+  .group {
+    background: transparent;
+    border-radius: 8px;
+    align-items: center;
+  }
+  .title-line { font-weight: 600; color: $fg; }
+  .btn { color: $fg; }
+  .btn.danger { color: $red; }
+}

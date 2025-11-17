@@ -9,7 +9,7 @@
 )
 
 (defwindow calendar
-  :geometry (geometry :anchor "bottomright"
+  :geometry (geometry :anchor "bottom right"
                       :x "98%"
                       :y "97%"
                       :width "320px"
@@ -181,3 +181,39 @@
       (button :class "btn" :onclick "bash -lc 'eww close music_panel'" (label :class "icon" :text ""))
     )
   ))
+
+;; Panel unificado de controles rápidos: música + energía en una fila
+(defwidget quick_controls_row []
+  (box :class "controls-row" :orientation "h" :spacing 14
+    ;; Grupo reproductor
+    (box :class "group" :orientation "h" :spacing 10
+      (label :class "icon" :text "")
+      (box :orientation "v" :spacing 2
+        (label :class "title-line" :text player_title)
+        (label :text player_artist)
+      )
+      (box :orientation "h" :spacing 10 :halign "center"
+        (button :class "btn" :onclick "bash -lc 'playerctl previous'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc 'playerctl play-pause'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc 'playerctl next'" (label :class "icon" :text ""))
+      )
+    )
+    ;; Separador flexible
+    (revealer :transition "none" (label :text ""))
+    ;; Grupo energía
+    (box :class "group" :orientation "h" :spacing 10
+      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh suspend'" (label :class "icon" :text "󰤄"))
+      (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh reboot'" (label :class "icon" :text "󰜉"))
+      (button :class "btn danger" :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh poweroff'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'eww close quick_controls'" (label :class "icon" :text ""))
+    )
+  )
+)
+
+(defwindow quick_controls
+  :monitor 0
+  :geometry (geometry :anchor "center" :width "560px" :height "150px")
+  :stacking "fg"
+  :focusable true
+  (quick_controls_row)
+)
