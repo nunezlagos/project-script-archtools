@@ -1,0 +1,29 @@
+;; ========================
+;; Ventana: música
+;; ========================
+
+(defpoll player_status :interval "2s" "bash -lc 'playerctl status 2>/dev/null || echo Desconocido'" )
+(defpoll player_title :interval "2s" "bash -lc 'playerctl metadata xesam:title 2>/dev/null || echo --'" )
+(defpoll player_artist :interval "2s" "bash -lc 'playerctl metadata xesam:artist 2>/dev/null || echo --'" )
+
+(defwindow music_panel
+  :monitor 0
+  :geometry (geometry :anchor "center" :width "420px" :height "180px")
+  :stacking "fg"
+  :focusable true
+  (box :class "controls-box" :orientation "v" :spacing 8
+    (box :orientation "h" :spacing 8
+      (label :class "icon" :text "")
+      (label :text player_status)
+    )
+    (box :orientation "v" :spacing 4
+      (label :text player_title)
+      (label :text player_artist)
+    )
+    (box :orientation "h" :spacing 10 :halign "center"
+      (button :class "btn" :onclick "bash -lc 'playerctl previous'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'playerctl play-pause'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'playerctl next'" (label :class "icon" :text ""))
+      (button :class "btn" :onclick "bash -lc 'eww close music_panel'" (label :class "icon" :text ""))
+    )
+  ))

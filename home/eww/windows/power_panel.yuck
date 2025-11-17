@@ -1,0 +1,19 @@
+;; ========================
+;; Ventana: energía
+;; ========================
+
+(defwindow power_panel
+  :monitor 0
+  :geometry (geometry :anchor "center" :width "240px" :height "160px")
+  :stacking "fg"
+  :focusable true
+  (box :class "controls-box" :orientation "v" :spacing 8
+    (button :class "btn"
+      :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh suspend'"
+      (label :class "icon" :text "󰤄"))
+    (button :class "btn"
+      :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh reboot'"
+      (label :class "icon" :text "󰜉"))
+    (button :class "btn danger"
+      :onclick "bash -lc '$HOME/.config/eww/scripts/confirm.sh poweroff'"
+      (label :class "icon" :text ""))))

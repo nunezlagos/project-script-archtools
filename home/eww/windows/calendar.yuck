@@ -1,0 +1,111 @@
+;; ========================
+;; Ventana: calendario + controles
+;; ========================
+
+(defwidget cal []
+  (box :class "cal-box" :orientation "v"
+    (notifications)
+    (calendar :class "cal")
+    (controls)
+  ))
+
+(defwindow calendar
+  :geometry (geometry :anchor "bottom right"
+                      :x "98%"
+                      :y "97%"
+                      :width "320px"
+                      :height "500px")
+  (cal))
+
+;; --------- Estado del sistema (audio / bt / notifs) ---------
+(defpoll vol_pct :interval "2s"
+  "bash -lc 'pactl get-sink-volume @DEFAULT_SINK@ | awk \"{print \$5}\" | tr -d %'"
+)
+(defpoll vol_mute :interval "2s"
+  "bash -lc 'pactl get-sink-mute @DEFAULT_SINK@ | awk \"{print \$2}\"'"
+)
+(defpoll mic_mute :interval "2s"
+  "bash -lc 'pactl get-source-mute @DEFAULT_SOURCE@ | awk \"{print \$2}\"'"
+)
+(defpoll bt_power :interval "3s"
+  "bash -lc '(bluetoothctl show 2>/dev/null | grep -i \"Powered:\" | awk \"{print \$2}\") || echo no'"
+)
+
+;; Conteo de notificaciones pendientes desde dunst
+(defpoll notif_count :interval "3s"
+  "bash -lc 'dunstctl count waiting 2>/dev/null || echo 0'"
+)
+
+;; Estados internos
+(defvar show_bt false)
+(defvar show_audio false)
+(defvar bt_selected_name "")
+(defvar bt_selected_addr "")
+
+;; Bloque de notificaciones minimalista dentro del calendario
+(defwidget notifications []
+  (box :class "section" :orientation "v" :spacing 6
+    (label :class "section-title" :text "Notificaciones")
+    (label :text "No hay nuevas notificaciones")
+    (box :orientation "h" :spacing 6 :visible false
+      (label :text "Pendientes: {{notif_count}}")
+      (button :class "btn" :onclick "bash -lc 'dunstctl close-all'"
+        (label :class "icon" :text ""))
+    )))
+
+;; Controles: BT / Audio / Volumen
+(defwidget controls []
+  (box :class "controls-box" :orientation "v" :spacing 6
+    ;; Fila de iconos principales
+    (box :orientation "h" :spacing 8
+      (button :class "btn"
+        :onclick "bash -lc 'eww update show_bt=1; eww update show_audio=0; $HOME/.config/eww/scripts/bt_select_init.sh'"
+        (label :class "icon" :text ""))
+      (button :class "btn"
+        :onclick "bash -lc 'eww update show_audio=1; eww update show_bt=0'"
+        (label :class "icon" :text ""))
+      (button :class "btn"
+        :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ -5%'"
+        (label :class "icon" :text ""))
+      (button :class "btn mute"
+        :onclick "bash -lc 'pactl set-sink-mute @DEFAULT_SINK@ toggle'"
+        (label :class "icon" :text ""))
+      (button :class "btn"
+        :onclick "bash -lc 'pactl set-sink-volume @DEFAULT_SINK@ +5%'"
+        (label :class "icon" :text ""))
+    )
+
+    ;; Sección Audio dentro del calendario
+    (box :class "section" :orientation "v" :spacing 6 :visible show_audio
+      (box :orientation "h" :spacing 6
+        (label :class "icon" :text "")
+        (label :text current_sink_name)
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh prev'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-sink.sh next'" (label :class "icon" :text ""))
+      )
+      (box :orientation "h" :spacing 6
+        (label :class "icon" :text "")
+        (label :text current_source_name)
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh prev'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/cycle-source.sh next'" (label :class "icon" :text ""))
+      ))
+
+    ;; Sección Bluetooth dentro del calendario
+    (box :class "section" :orientation "v" :spacing 6 :visible show_bt
+      (box :orientation "h" :spacing 6
+        (label :class "icon" :text "")
+        (label :text bt_selected_name)
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/bt_select_cycle.sh prev'" (label :class "icon" :text ""))
+        (button :class "btn" :onclick "bash -lc '$HOME/.config/eww/scripts/bt_select_cycle.sh next'" (label :class "icon" :text ""))
+      )
+      (box :orientation "h" :spacing 6
+        (button :class "btn" :onclick "bash -lc 'if bluetoothctl show 2>/dev/null | grep -qi \"Powered: yes\"; then bluetoothctl power off; else bluetoothctl power on; fi'" (label :text "Power"))
+        (button :class "btn ok" :onclick "bash -lc '[[ -n \"{{bt_selected_addr}}\" ]] && bluetoothctl connect {{bt_selected_addr}}'" (label :text "Conectar"))
+        (button :class "btn danger" :onclick "bash -lc '[[ -n \"{{bt_selected_addr}}\" ]] && bluetoothctl disconnect {{bt_selected_addr}}'" (label :text "Desconectar"))
+      )))
+
+;; Polls informativos (nombres de dispositivos por defecto)
+(defpoll current_sink_name :interval "2s"
+  "bash -lc 'pactl info | awk -F\": \" \"/Default Sink/ {print $2}\"'" )
+(defpoll current_source_name :interval "2s"
+  "bash -lc 'pactl info | awk -F\": \" \"/Default Source/ {print $2}\"'" )

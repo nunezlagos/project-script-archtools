@@ -1,0 +1,22 @@
+;; ========================
+;; Ventana: confirmación
+;; ========================
+
+(defvar confirm_msg "¿Confirmar acción?")
+(defvar confirm_cmd "")
+
+(defwindow confirm_panel
+  :monitor 0
+  :geometry (geometry :anchor "center" :width "260px" :height "130px")
+  :stacking "fg"
+  :focusable true
+  (box :class "confirm-box" :orientation "v" :spacing 10
+    (label :text confirm_msg)
+    (box :orientation "h" :spacing 8 :halign "center"
+      (button :class "btn danger"
+        :onclick "bash -lc '{{confirm_cmd}}'; eww close confirm_panel; eww close power_panel"
+        (label :text "Sí"))
+      (button :class "btn"
+        :onclick "bash -lc 'eww close confirm_panel'"
+        (label :text "No"))
+    )))

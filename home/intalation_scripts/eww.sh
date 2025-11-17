@@ -67,3 +67,34 @@ if command -v eww >/dev/null 2>&1; then
 fi
 
 oneline "instalación/config de eww completada"
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Descubre el root del repo (la carpeta 'home/')
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/eww"
+
+mkdir -p "$CONFIG_DIR"
+mkdir -p "$CONFIG_DIR/scss"
+mkdir -p "$CONFIG_DIR/scripts"
+mkdir -p "$CONFIG_DIR/windows"
+
+# Archivos raíz
+cp -f "$ROOT_DIR/eww/eww.yuck" "$CONFIG_DIR/" || true
+cp -f "$ROOT_DIR/eww/eww.scss" "$CONFIG_DIR/" || true
+
+# SCSS
+cp -f "$ROOT_DIR/eww/scss/style.scss" "$CONFIG_DIR/scss/" || true
+cp -f "$ROOT_DIR/eww/scss/_variables.scss" "$CONFIG_DIR/scss/" || true
+
+# Scripts auxiliares
+if [ -d "$ROOT_DIR/eww/scripts" ]; then
+  cp -rf "$ROOT_DIR/eww/scripts/"* "$CONFIG_DIR/scripts/" || true
+fi
+
+# Ventanas separadas
+if [ -d "$ROOT_DIR/eww/windows" ]; then
+  cp -rf "$ROOT_DIR/eww/windows/"* "$CONFIG_DIR/windows/" || true
+fi
+
+echo "Eww config desplegada en: $CONFIG_DIR"
