@@ -9,16 +9,17 @@ fi
 
 mon="$(bspc query -M -m --names)"
 
-# Si el escritorio 'target' existe, enfocarlo. Si no, crear solo el siguiente (máximo+1)
+# Si el escritorio 'target' existe, enfocarlo. Si no, crear secuencialmente hasta 'target'.
 if bspc query -D -m "$mon" --names | grep -qx "$target"; then
   bspc desktop -f "$target"
 else
-  # Calcular el máximo existente y crear solo el siguiente
+  # Calcular el máximo existente y crear  (max+1 .. target)
   max=$(bspc query -D -m "$mon" --names | sort -n | tail -n1)
   [[ -z "$max" ]] && max=0
-  next=$(( max + 1 ))
-  bspc monitor "$mon" -a "$next"
-  bspc desktop -f "$next"
+  for (( i=max+1; i<=target; i++ )); do
+    bspc monitor "$mon" -a "$i"
+  done
+  bspc desktop -f "$target"
 fi
 
 exit 0

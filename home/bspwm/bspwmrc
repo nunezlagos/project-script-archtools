@@ -5,10 +5,10 @@ vmware-user-suid-wrapper &
 
 pgrep -x sxhkd > /dev/null || sxhkd &
 pgrep -x dunst > /dev/null || dunst &
-pgrep -x eww > /dev/null || eww daemon &
+pgrep -x eww > /dev/null || eww -c "$HOME/.config/eww" daemon &
 
-# Iniciar con un único escritorio; el resto se crean dinámicamente vía sxhkd
-bspc monitor -d 1
+# Iniciar con 7 escritorios fijos (1..7)
+bspc monitor -d 1 2 3 4 5 6 7
 bspc config border_width         1
 bspc config window_gap         	12
 

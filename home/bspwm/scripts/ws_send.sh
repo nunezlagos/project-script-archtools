@@ -17,13 +17,14 @@ if [[ -z "$mon" ]]; then
   exit 1
 fi
 
-# Crear secuencialmente solo el siguiente (máximo+1) si el destino no existe
-if ! bspc query -D -m "$mon" | grep -qx "$target"; then
+# Crear secuencialmente todos los faltantes hasta el destino si no existe
+if ! bspc query -D -m "$mon" --names | grep -qx "$target"; then
   max=$(bspc query -D -m "$mon" --names | sort -n | tail -n1)
   [[ -z "$max" ]] && max=0
-  next=$(( max + 1 ))
-  bspc monitor "$mon" -a "$next"
-  dest="$next"
+  for (( i=max+1; i<=target; i++ )); do
+    bspc monitor "$mon" -a "$i"
+  done
+  dest="$target"
 else
   dest="$target"
 fi
