@@ -1,0 +1,5 @@
+Créame un script en Bash para Arch Linux llamado limpieza_kde.sh.
+Debe eliminar aplicaciones no esenciales de KDE Plasma (Discover, PackageKit, KMail, Kontact, Akonadi, reproductores multimedia KDE, K3b, KGet, navegadores KDE antiguos, juegos KDE, apps educativas KDE y Sweeper).
+El script debe verificar si es ejecutado como root, mostrar la lista de paquetes que serán eliminados, pedir confirmación antes de proceder, ejecutar pacman -Rns para todos ellos y luego borrar dependencias huérfanas con pacman -Qtdq.
+Importante: no debe eliminar la aplicación Kleopatra.
+No muestres el resultado del script, solo entrégame el código final.
